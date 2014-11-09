@@ -3,6 +3,7 @@
     "type": "roundcube-plugin",
     "description": "Task management plugin",
     "homepage": "http://git.kolab.org/roundcubemail-plugins-kolab/",
+    "keywords": ["apps","todo","tasks"],
     "license": "AGPLv3",
     "authors": [
         {

@@ -41,8 +41,25 @@
   *    'categories' => 'Task category',
   *       'flagged' => 'Boolean value whether this record is flagged',
   *      'complete' => 'Float value representing the completeness state (range 0..1)',
-  *   'sensitivity' => 0|1|2,   // Event sensitivity (0=public, 1=private, 2=confidential)
-  *        'alarms' => '-15M:DISPLAY',  // Reminder settings inspired by valarm definition (e.g. display alert 15 minutes before due time)
+  *      'status'   => 'Task status string according to (NEEDS-ACTION, IN-PROCESS, COMPLETED, CANCELLED) RFC 2445',
+  *       'valarms' => array(           // List of reminders (new format), each represented as a hash array:
+  *                array(
+  *                   'trigger' => '-PT90M',     // ISO 8601 period string prefixed with '+' or '-', or DateTime object
+  *                    'action' => 'DISPLAY|EMAIL|AUDIO',
+  *                  'duration' => 'PT15M',      // ISO 8601 period string
+  *                    'repeat' => 0,            // number of repetitions
+  *               'description' => '',           // text to display for DISPLAY actions
+  *                   'summary' => '',           // message text for EMAIL actions
+  *                 'attendees' => array(),      // list of email addresses to receive alarm messages
+  *                ),
+  *    ),
+  *    'recurrence' => array(   // Recurrence definition according to iCalendar (RFC 2445) specification as list of key-value pairs
+  *              'FREQ' => 'DAILY|WEEKLY|MONTHLY|YEARLY',
+  *          'INTERVAL' => 1...n,
+  *             'UNTIL' => DateTime,
+  *             'COUNT' => 1..n,     // number of times
+  *             'RDATE' => array(),  // complete list of DateTime objects denoting individual repeat dates
+  *     ),
   *     '_fromlist' => 'List identifier where the task was stored before',
   *  );
   */
@@ -55,6 +72,7 @@ abstract class tasklist_driver
     // features supported by the backend
     public $alarms = false;
     public $attachments = false;
+    public $attendees = false;
     public $undelete = false; // task undelete action
     public $sortable = false;
     public $alarm_types = array('DISPLAY');
@@ -106,7 +124,16 @@ abstract class tasklist_driver
      *      id: list Identifier
      * @return boolean True on success, Fales on failure
      */
-    abstract function remove_list($prop);
+    abstract function delete_list($prop);
+
+    /**
+     * Search for shared or otherwise not listed tasklists the user has access
+     *
+     * @param string Search string
+     * @param string Section/source to search
+     * @return array List of tasklists
+     */
+    abstract function search_lists($query, $source);
 
     /**
      * Get number of tasks matching the given filter
@@ -130,6 +157,13 @@ abstract class tasklist_driver
     abstract function list_tasks($filter, $lists = null);
 
     /**
+     * Get a list of tags to assign tasks to
+     *
+     * @return array List of tags
+     */
+    abstract function get_tags();
+
+    /**
      * Get a list of pending alarms to be displayed to the user
      *
      * @param  integer Current time (unix timestamp)
@@ -151,6 +185,13 @@ abstract class tasklist_driver
      * @param  integer Suspend the alarm for this number of seconds
      */
     abstract function dismiss_alarm($id, $snooze = 0);
+
+    /**
+     * Remove alarm dismissal or snooze state
+     *
+     * @param  string  Task identifier
+     */
+    abstract public function clear_alarms($id);
 
     /**
      * Return data of a specific task
@@ -247,6 +288,46 @@ abstract class tasklist_driver
     public function get_attachment_body($id, $task) { }
 
     /**
+     * Build a struct representing the given message reference
+     *
+     * @param object|string $uri_or_headers rcube_message_header instance holding the message headers
+     *                         or an URI from a stored link referencing a mail message.
+     * @param string $folder  IMAP folder the message resides in
+     *
+     * @return array An struct referencing the given IMAP message
+     */
+    public function get_message_reference($uri_or_headers, $folder = null)
+    {
+        // to be implemented by the derived classes
+        return false;
+    }
+
+    /**
+     * Find tasks assigned to a specified message
+     *
+     * @param object $message rcube_message_header instance
+     * @param string $folder  IMAP folder the message resides in
+     *
+     * @param array List of linked task objects
+     */
+    public function get_message_related_tasks($headers, $folder)
+    {
+        // to be implemented by the derived classes
+        return array();
+    }
+
+    /**
+     * Helper method to determine whether the given task is considered "complete"
+     *
+     * @param array  $task  Hash array with event properties:
+     * @return boolean True if complete, False otherwiese
+     */
+    public function is_complete($task)
+    {
+        return ($task['complete'] >= 1.0 && empty($task['status'])) || $task['status'] === 'COMPLETED';
+    }
+
+    /**
      * List availabale categories
      * The default implementation reads them from config/user prefs
      */
@@ -277,4 +358,15 @@ abstract class tasklist_driver
         return $html;
     }
 
+    /**
+     * Handler for user_delete plugin hook
+     *
+     * @param array Hash array with hook arguments
+     * @return array Return arguments for plugin hooks
+     */
+    public function user_delete($args)
+    {
+        // TO BE OVERRIDDEN
+        return $args;
+    }
 }

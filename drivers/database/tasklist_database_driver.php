@@ -6,7 +6,7 @@
  * @version @package_version@
  * @author Thomas Bruederli <bruederli@kolabsys.com>
  *
- * Copyright (C) 2012, Kolab Systems AG <contact@kolabsys.com>
+ * Copyright (C) 2012-2015, Kolab Systems AG <contact@kolabsys.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -24,6 +24,8 @@
 
 class tasklist_database_driver extends tasklist_driver
 {
+    const IS_COMPLETE_SQL = "(status='COMPLETED' OR (complete=1 AND status=''))";
+
     public $undelete = true; // yes, we can
     public $sortable = false;
     public $alarm_types = array('DISPLAY');
@@ -32,6 +34,7 @@ class tasklist_database_driver extends tasklist_driver
     private $plugin;
     private $lists = array();
     private $list_ids = '';
+    private $tags = array();
 
     private $db_tasks = 'tasks';
     private $db_lists = 'tasklists';
@@ -75,6 +78,7 @@ class tasklist_database_driver extends tasklist_driver
           $arr['name'] = html::quote($arr['name']);
           $arr['listname'] = html::quote($arr['name']);
           $arr['editable'] = true;
+          $arr['rights'] = 'lrswikxtea';
           $this->lists[$arr['id']] = $arr;
           $list_ids[] = $this->rc->db->quote($arr['id']);
         }
@@ -170,9 +174,9 @@ class tasklist_database_driver extends tasklist_driver
      *
      * @param array Hash array with list properties
      * @return boolean True on success, Fales on failure
-     * @see tasklist_driver::remove_list()
+     * @see tasklist_driver::delete_list()
      */
-    public function remove_list($prop)
+    public function delete_list($prop)
     {
         $list_id = $prop['id'];
 
@@ -200,6 +204,28 @@ class tasklist_database_driver extends tasklist_driver
     }
 
     /**
+     * Search for shared or otherwise not listed tasklists the user has access
+     *
+     * @param string Search string
+     * @param string Section/source to search
+     * @return array List of tasklists
+     */
+    public function search_lists($query, $source)
+    {
+        return array();
+    }
+
+    /**
+     * Get a list of tags to assign tasks to
+     *
+     * @return array List of tags
+     */
+    public function get_tags()
+    {
+        return array_values(array_unique($this->tags, SORT_STRING));
+    }
+
+    /**
      * Get number of tasks matching the given filter
      *
      * @param array List of lists to count tasks of
@@ -224,7 +250,7 @@ class tasklist_database_driver extends tasklist_driver
         $result = $this->rc->db->query(sprintf(
             "SELECT task_id, flagged, date FROM " . $this->db_tasks . "
              WHERE tasklist_id IN (%s)
-             AND del=0 AND complete<1",
+             AND del=0 AND NOT " . self::IS_COMPLETE_SQL,
             join(',', $list_ids)
         ));
 
@@ -286,9 +312,9 @@ class tasklist_database_driver extends tasklist_driver
             $sql_add = ' AND date IS NULL';
 
         if ($filter['mask'] & tasklist::FILTER_MASK_COMPLETE)
-            $sql_add .= ' AND complete=1';
+            $sql_add .= ' AND ' . self::IS_COMPLETE_SQL;
         else if (empty($filter['since']))  // don't show complete tasks by default
-            $sql_add .= ' AND complete<1';
+            $sql_add .= ' AND NOT ' . self::IS_COMPLETE_SQL;
 
         if ($filter['mask'] & tasklist::FILTER_MASK_FLAGGED)
             $sql_add .= ' AND flagged=1';
@@ -435,7 +461,7 @@ class tasklist_database_driver extends tasklist_driver
             $result = $this->rc->db->query(sprintf(
                 "SELECT * FROM " . $this->db_tasks . "
                  WHERE tasklist_id IN (%s)
-                 AND notify <= %s AND complete < 1",
+                 AND notify <= %s AND NOT " . self::IS_COMPLETE_SQL,
                 join(',', $list_ids),
                 $this->rc->db->fromunixtime($time)
             ));
@@ -471,6 +497,16 @@ class tasklist_database_driver extends tasklist_driver
     }
 
     /**
+     * Remove alarm dismissal or snooze state
+     *
+     * @param  string  Task identifier
+     */
+    public function clear_alarms($id)
+    {
+        // Nothing to do here. Alarms are reset in edit_task()
+    }
+
+    /**
      * Map some internal database values to match the generic "API"
      */
     private function _read_postprocess($rec)
@@ -482,6 +518,21 @@ class tasklist_database_driver extends tasklist_driver
 
         if (!$rec['parent_id'])
             unset($rec['parent_id']);
+
+        // decode serialized alarms
+        if ($rec['alarms']) {
+            $rec['valarms'] = $this->unserialize_alarms($rec['alarms']);
+            unset($rec['alarms']);
+        }
+
+        // decode serialze recurrence rules
+        if ($rec['recurrence']) {
+            $rec['recurrence'] = $this->unserialize_recurrence($rec['recurrence']);
+        }
+
+        if (!empty($rec['tags'])) {
+            $this->tags = array_merge($this->tags, (array)$rec['tags']);
+        }
 
         unset($rec['task_id'], $rec['tasklist_id'], $rec['created']);
         return $rec;
@@ -501,7 +552,14 @@ class tasklist_database_driver extends tasklist_driver
         if (!$this->lists[$list_id] || $this->lists[$list_id]['readonly'])
             return false;
 
-        foreach (array('parent_id', 'date', 'time', 'startdate', 'starttime', 'alarms') as $col) {
+        if (is_array($prop['valarms'])) {
+            $prop['alarms'] = $this->serialize_alarms($prop['valarms']);
+        }
+        if (is_array($prop['recurrence'])) {
+            $prop['recurrence'] = $this->serialize_recurrence($prop['recurrence']);
+        }
+
+        foreach (array('parent_id', 'date', 'time', 'startdate', 'starttime', 'alarms', 'recurrence', 'status') as $col) {
             if (empty($prop[$col]))
                 $prop[$col] = null;
         }
@@ -509,8 +567,8 @@ class tasklist_database_driver extends tasklist_driver
         $notify_at = $this->_get_notification($prop);
         $result = $this->rc->db->query(sprintf(
             "INSERT INTO " . $this->db_tasks . "
-             (tasklist_id, uid, parent_id, created, changed, title, date, time, startdate, starttime, description, tags, alarms, notify)
-             VALUES (?, ?, ?, %s, %s, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+             (tasklist_id, uid, parent_id, created, changed, title, date, time, startdate, starttime, description, tags, flagged, complete, status, alarms, recurrence, notify)
+             VALUES (?, ?, ?, %s, %s, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
              $this->rc->db->now(),
              $this->rc->db->now()
             ),
@@ -524,7 +582,11 @@ class tasklist_database_driver extends tasklist_driver
             $prop['starttime'],
             strval($prop['description']),
             join(',', (array)$prop['tags']),
+            $prop['flagged'] ? 1 : 0,
+            intval($prop['complete']),
+            $prop['status'],
             $prop['alarms'],
+            $prop['recurrence'],
             $notify_at
         );
 
@@ -543,12 +605,19 @@ class tasklist_database_driver extends tasklist_driver
      */
     public function edit_task($prop)
     {
+        if (is_array($prop['valarms'])) {
+            $prop['alarms'] = $this->serialize_alarms($prop['valarms']);
+        }
+        if (is_array($prop['recurrence'])) {
+            $prop['recurrence'] = $this->serialize_recurrence($prop['recurrence']);
+        }
+
         $sql_set = array();
         foreach (array('title', 'description', 'flagged', 'complete') as $col) {
             if (isset($prop[$col]))
                 $sql_set[] = $this->rc->db->quote_identifier($col) . '=' . $this->rc->db->quote($prop[$col]);
         }
-        foreach (array('parent_id', 'date', 'time', 'startdate', 'starttime', 'alarms') as $col) {
+        foreach (array('parent_id', 'date', 'time', 'startdate', 'starttime', 'alarms', 'recurrence', 'status') as $col) {
             if (isset($prop[$col]))
                 $sql_set[] = $this->rc->db->quote_identifier($col) . '=' . (empty($prop[$col]) ? 'NULL' : $this->rc->db->quote($prop[$col]));
         }
@@ -656,14 +725,115 @@ class tasklist_database_driver extends tasklist_driver
      */
     private function _get_notification($task)
     {
-        if ($task['alarms'] && $task['complete'] < 1 || strpos($task['alarms'], '@') !== false) {
+        if ($task['valarms'] && !$this->is_complete($task)) {
             $alarm = libcalendaring::get_next_alarm($task, 'task');
 
-        if ($alarm['time'] && $alarm['action'] == 'DISPLAY')
+        if ($alarm['time'] && in_array($alarm['action'], $this->alarm_types))
           return date('Y-m-d H:i:s', $alarm['time']);
       }
 
       return null;
     }
 
+    /**
+     * Helper method to serialize the list of alarms into a string
+     */
+    private function serialize_alarms($valarms)
+    {
+        foreach ((array)$valarms as $i => $alarm) {
+            if ($alarm['trigger'] instanceof DateTime) {
+                $valarms[$i]['trigger'] = '@' . $alarm['trigger']->format('c');
+            }
+        }
+
+        return $valarms ? json_encode($valarms) : null;
+    }
+
+    /**
+     * Helper method to decode a serialized list of alarms
+     */
+    private function unserialize_alarms($alarms)
+    {
+        // decode json serialized alarms
+        if ($alarms && $alarms[0] == '[') {
+            $valarms = json_decode($alarms, true);
+            foreach ($valarms as $i => $alarm) {
+                if ($alarm['trigger'][0] == '@') {
+                    try {
+                        $valarms[$i]['trigger'] = new DateTime(substr($alarm['trigger'], 1));
+                    }
+                    catch (Exception $e) {
+                        unset($valarms[$i]);
+                    }
+                }
+            }
+        }
+        // convert legacy alarms data
+        else if (strlen($alarms)) {
+            list($trigger, $action) = explode(':', $alarms, 2);
+            if ($trigger = libcalendaring::parse_alarm_value($trigger)) {
+                $valarms = array(array('action' => $action, 'trigger' => $trigger[3] ?: $trigger[0]));
+            }
+        }
+
+        return $valarms;
+    }
+
+    /**
+     * Helper method to serialize task recurrence properties
+     */
+    private function serialize_recurrence($recurrence)
+    {
+        foreach ((array)$recurrence as $k => $val) {
+            if ($val instanceof DateTime) {
+                $recurrence[$k] = '@' . $val->format('c');
+            }
+        }
+
+        return $recurrence ? json_encode($recurrence) : null;
+    }
+
+    /**
+     * Helper method to decode a serialized task recurrence struct
+     */
+    private function unserialize_recurrence($ser)
+    {
+        if (strlen($ser)) {
+            $recurrence = json_decode($ser, true);
+            foreach ((array)$recurrence as $k => $val) {
+                if ($val[0] == '@') {
+                    try {
+                        $recurrence[$k] = new DateTime(substr($val, 1));
+                    }
+                    catch (Exception $e) {
+                        unset($recurrence[$k]);
+                    }
+                }
+            }
+        }
+        else {
+            $recurrence = '';
+        }
+
+        return $recurrence;
+    }
+
+    /**
+     * Handler for user_delete plugin hook
+     */
+    public function user_delete($args)
+    {
+        $db = $this->rc->db;
+        $list_ids = array();
+        $lists = $db->query("SELECT tasklist_id FROM " . $this->db_lists . " WHERE user_id=?", $args['user']->ID);
+        while ($row = $db->fetch_assoc($lists)) {
+            $list_ids[] = $row['tasklist_id'];
+        }
+
+        if (!empty($list_ids)) {
+            foreach (array($this->db_tasks, $this->db_lists) as $table) {
+                $db->query(sprintf("DELETE FROM $table WHERE tasklist_id IN (%s)", join(',', $list_ids)));
+            }
+        }
+    }
 }

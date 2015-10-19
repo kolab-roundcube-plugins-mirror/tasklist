@@ -21,6 +21,7 @@ $labels['newtask'] = 'Nový úkol';
 $labels['createtask'] = 'Vytvořit úkol <Enter>';
 $labels['createnewtask'] = 'Vytvořit nový úkol (např. Sobota, posekat trávník)';
 $labels['createfrommail'] = 'Uložit jako úkol';
+$labels['printdescriptions'] = 'Vytisknout popisy';
 $labels['mark'] = 'Označit';
 $labels['unmark'] = 'Odznačit';
 $labels['edit'] = 'Upravit';

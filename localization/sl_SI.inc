@@ -21,6 +21,7 @@ $labels['newtask'] = 'Nova naloga';
 $labels['createtask'] = 'Nova naloga <Enter>';
 $labels['createnewtask'] = 'Nova naloga (npr. Sobota, Košnja trave)';
 $labels['createfrommail'] = 'Shrani kot nalogo';
+$labels['printdescriptions'] = 'Opis za tisk';
 $labels['mark'] = 'Označi';
 $labels['unmark'] = 'Odznači';
 $labels['edit'] = 'Uredi';

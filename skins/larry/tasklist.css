@@ -642,7 +642,8 @@ ul.toolbarmenu li span.icon.taskadd,
 	font-size: 12px;
 }
 
-.taskhead .flagged {
+.taskhead .flagged,
+.taskshow.status-flagged h2:after {
 	display: inline-block;
 	width: 16px;
 	height: 16px;
@@ -657,7 +658,8 @@ ul.toolbarmenu li span.icon.taskadd,
 	background-position: -2px -3px;
 }
 
-.taskhead.flagged .flagged {
+.taskhead.flagged .flagged,
+.taskshow.status-flagged h2:after {
 	background-position: -2px -23px;
 }
 
@@ -767,6 +769,7 @@ ul.toolbarmenu li span.icon.taskadd,
 ul.toolbarmenu li span.add,
 ul.toolbarmenu li span.expand,
 ul.toolbarmenu li span.collapse,
+ul.toolbarmenu li span.history,
 ul.toolbarmenu.iconized .selected span.icon {
 	background-image: url(sprites.png);
 }
@@ -785,6 +788,10 @@ ul.toolbarmenu li span.collapse {
 
 ul.toolbarmenu li span.delete {
 	background-position: 0 -1508px;
+}
+
+ul.toolbarmenu li span.history {
+	background-position: 0 -408px;
 }
 
 ul.toolbarmenu.iconized .selected span.icon {
@@ -839,8 +846,9 @@ ul.toolbarmenu .sortcol.by-auto a {
 /*** task edit form ***/
 
 #taskedit,
-#taskshow {
-	display:none;
+#taskshow,
+#taskdiff {
+	display: none;
 }
 
 #taskedit {
@@ -850,19 +858,36 @@ ul.toolbarmenu .sortcol.by-auto a {
 	margin: 0 -0.2em;
 }
 
-#taskshow h2 {
+.taskshow h2 {
 	margin-top: -0.5em;
 }
 
-#taskshow label {
+#taskdiff h2 {
+	font-size: 18px;
+	margin: -0.3em 0 0.4em 0;
+}
+
+.taskshow.status-completed h2 {
+	text-decoration: line-through;
+}
+
+.taskshow.status-flagged h2:after {
+	content: " ";
+	position: relative;
+	margin-left: 0.6em;
+	top: 1px;
+	cursor: default;
+}
+
+.taskshow label {
 	color: #999;
 }
 
-#taskshow.status-cancelled {
+.taskshow.status-cancelled {
 	background: url(images/badge_cancelled.png) top right no-repeat;
 }
 
-#task-parent-title {
+.task-parent-title {
 	position: relative;
 	top: -0.6em;
 }
@@ -1048,8 +1073,36 @@ label.block {
 	margin-bottom: 0.3em;
 }
 
-#task-description {
+.task-description {
 	margin-bottom: 1em;
+}
+
+.taskshow .task-text-old,
+.taskshow .task-text-new,
+.taskshow .task-text-diff {
+	padding: 2px;
+}
+
+.taskshow .task-text-diff del,
+.taskshow .task-text-diff ins {
+	text-decoration: none;
+	color: inherit;
+}
+
+.taskshow .task-text-old,
+.taskshow .task-text-diff del {
+	background-color: #fdd;
+	/* text-decoration: line-through; */
+}
+
+.taskshow .task-text-new,
+.taskshow .task-text-diff ins {
+	background-color: #dfd;
+}
+
+.tasklistview .taskshow label span.index {
+	vertical-align: inherit;
+	margin-left: 0.6em;
 }
 
 #taskedit-completeness-slider {

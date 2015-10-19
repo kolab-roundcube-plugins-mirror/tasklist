@@ -10,6 +10,7 @@ $labels['navtitle'] = 'Задачі';
 $labels['tasklistsubscribe'] = 'Завжди показувати';
 $labels['searchterms'] = 'Умови пошуку';
 $labels['removelist'] = 'Вилучити зі списку';
+$labels['printdescriptions'] = 'Друк опису';
 $labels['edit'] = 'Редагувати';
 $labels['description'] = 'Опис';
 $labels['start'] = 'Початок';

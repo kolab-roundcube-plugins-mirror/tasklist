@@ -21,6 +21,7 @@ $labels['newtask'] = 'งานใหม่';
 $labels['createtask'] = 'สร้างงาน<เอนเตอร์>';
 $labels['createnewtask'] = 'สร้างงานใหม่ (เช่น วันเสาร์, ตัดหญ้าในสนาม)';
 $labels['createfrommail'] = 'บันทึกเป็นงาน';
+$labels['printdescriptions'] = 'พิมพ์คำอธิบาย';
 $labels['mark'] = 'ทำเครื่องหมาย';
 $labels['unmark'] = 'ยกเลิกการทำเครื่องหมาย';
 $labels['edit'] = 'แก้ไข';

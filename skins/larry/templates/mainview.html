@@ -56,6 +56,11 @@
 				<!--<li role="menuitem"><roundcube:button command="list-import" label="tasklist.import" classAct="active" /></li>-->
 				<roundcube:if condition="env:tasklist_driver == 'kolab'" />
 				<li role="menuitem"><roundcube:button command="list-remove" label="tasklist.removelist" classAct="active" /></li>
+				<roundcube:endif />
+				<roundcube:if condition="config:calendar_caldav_url" />
+				<li role="menuitem"><roundcube:button command="list-showurl" label="tasklist.showcaldavurl" classAct="active" /></li>
+				<roundcube:endif />
+				<roundcube:if condition="env:tasklist_driver == 'kolab'" />
 				<li role="menuitem"><roundcube:button command="folders" task="settings" type="link" label="managefolders" classAct="active" /></li>
 				<roundcube:endif />
 			</ul>
@@ -144,6 +149,9 @@
 			<li role="menuitem"><roundcube:button name="edit" type="link" onclick="rctasks.edit_task(rctasks.selected_task.id, 'edit'); return false" label="edit" class="icon active" innerclass="icon edit" /></li>
 			<li role="menuitem"><roundcube:button name="delete" type="link" onclick="rctasks.delete_task(rctasks.selected_task.id); return false" label="delete" class="icon active" innerclass="icon delete" /></li>
 			<li role="menuitem"><roundcube:button name="addchild" type="link" onclick="rctasks.add_childtask(rctasks.selected_task.id); return false" label="tasklist.addsubtask" class="icon active" innerclass="icon add" /></li>
+			<roundcube:if condition="env:tasklist_driver == 'kolab' && config:kolab_bonnie_api" />
+			<li role="menuitem"><roundcube:button command="task-history" type="link" label="tasklist.taskhistory" class="icon" classAct="icon active" innerclass="icon history" /></li>
+			<roundcube:endif />
 		</ul>
 	</div>
 
@@ -154,12 +162,12 @@
 <roundcube:object name="message" id="messagestack" />
 
 
-<div id="taskshow">
-	<div class="form-section" id="task-parent-title"></div>
+<div id="taskshow" class="taskshow">
+	<div id="task-parent-title" class="form-section task-parent-title"></div>
 	<div class="form-section">
 		<h2 id="task-title"></h2>
 	</div>
-	<div id="task-description" class="form-section">
+	<div id="task-description" class="form-section task-description">
 	</div>
 	<div id="task-tags" class="form-section">
 		<label><roundcube:label name="tasklist.tags" /></label>
@@ -233,6 +241,77 @@
 
 	<roundcube:object name="plugin.task_rsvp_buttons" id="task-rsvp" class="task-dialog-message" style="display:none" />
 </div>
+
+<roundcube:if condition="env:tasklist_driver == 'kolab' && config:kolab_bonnie_api" />
+<div id="taskhistory" class="uidialog" aria-hidden="true">
+	<roundcube:object name="plugin.object_changelog_table" class="records-table changelog-table" />
+	<div class="compare-button"><input type="button" class="button" value="↳ <roundcube:label name='libkolab.compare' />" /></div>
+</div>
+
+<div id="taskdiff" class="uidialog taskshow" aria-hidden="true">
+	<div class="form-section task-parent-title">
+		<span class="task-text-old"></span> &#8674;
+		<span class="task-text-new"></span> &raquo;
+	</div>
+	<h2 class="task-title">Task Title</h2>
+	<h2 class="task-title-new task-text-new"></h2>
+	<div class="form-section task-description">
+		<label><roundcube:label name="calendar.description" /></label>
+		<div class="task-text-diff" style="white-space:pre-wrap"></div>
+		<div class="task-text-old"></div>
+		<div class="task-text-new"></div>
+	</div>
+	<div class="form-section task-flagged">
+		<label><roundcube:label name="tasklist.flagged" /></label>
+		<span class="task-text-old"></span> &#8674;
+		<span class="task-text-new"></span>
+	</div>
+	<div class="form-section task-start">
+		<label><roundcube:label name="tasklist.start" /></label>
+		<span class="task-text-old"></span> &#8674;
+		<span class="task-text-new"></span>
+	</div>
+	<div class="form-section task-date">
+		<label><roundcube:label name="tasklist.datetime" /></label>
+		<span class="task-text-old"></span> &#8674;
+		<span class="task-text-new"></span>
+	</div>
+	<div class="form-section task-recurrence">
+		<label><roundcube:label name="tasklist.repeat" /></label>
+		<span class="task-text-old"></span> &#8674;
+		<span class="task-text-new"></span>
+	</div>
+	<div class="form-section task-alarms">
+		<label><roundcube:label name="tasklist.alarms" /></label>
+		<span class="task-text-old"></span> &#8674;
+		<span class="task-text-new"></span>
+	</div>
+	<div class="form-section task-attendees">
+		<label><roundcube:label name="tasklist.assignedto" /><span class="index"></span></label>
+		<span class="task-text-old"></span> &#8674;
+		<span class="task-text-new"></span>
+	</div>
+	<div class="form-section task-complete">
+		<label><roundcube:label name="tasklist.complete" /></label>
+		<span class="task-text-old"></span> &#8674;
+		<span class="task-text-new"></span>
+	</div>
+	<div class="form-section task-status">
+		<label><roundcube:label name="tasklist.status" /></label>
+		<span class="task-text-old"></span> &#8674;
+		<span class="task-text-new"></span>
+	</div>
+	<div class="form-section task-links">
+		<label><roundcube:label name="tasklist.links" /><span class="index"></span></label>
+		<span class="task-text"></span>
+	</div>
+	<div class="form-section task-attachments">
+		<label><roundcube:label name="attachments" /><span class="index"></span></label>
+		<div class="task-text-old"></div>
+		<div class="task-text-new"></div>
+	</div>
+</div>
+<roundcube:endif />
 
 <roundcube:include file="/templates/taskedit.html" />
 

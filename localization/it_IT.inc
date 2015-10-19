@@ -21,6 +21,7 @@ $labels['newtask'] = 'Nuova attività';
 $labels['createtask'] = 'Crea attività <Invio>';
 $labels['createnewtask'] = 'Crea una nuova attività (es. Sabato, Falciare il prato)';
 $labels['createfrommail'] = 'Salva come attività';
+$labels['printdescriptions'] = 'Stampa descrizioni';
 $labels['mark'] = 'Importante';
 $labels['unmark'] = 'Non importante';
 $labels['edit'] = 'Modifica';

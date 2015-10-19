@@ -9,6 +9,7 @@
 $labels['tasklistsubscribe'] = 'Listar permanentemente';
 $labels['searchterms'] = 'Search terms';
 $labels['removelist'] = 'Remove from list';
+$labels['printdescriptions'] = 'Descrições de impressão';
 $labels['edit'] = 'Editar';
 $labels['description'] = 'Descrição';
 $labels['start'] = 'Início';

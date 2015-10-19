@@ -242,6 +242,7 @@ abstract class tasklist_driver
      *
      * @param array   Hash array with task properties:
      *      id: Task identifier
+     *    list: Tasklist identifer
      * @param boolean Remove record irreversible (mark as deleted otherwise, if supported by the backend)
      * @return boolean True on success, False on error
      */
@@ -266,6 +267,7 @@ abstract class tasklist_driver
      * @param array  $task  Hash array with event properties:
      *         id: Task identifier
      *       list: List identifier
+     *        rev: Revision (optional)
      *
      * @return array Hash array with attachment properties:
      *         id: Attachment identifier
@@ -282,6 +284,7 @@ abstract class tasklist_driver
      * @param array  $task  Hash array with event properties:
      *         id: Task identifier
      *       list: List identifier
+     *        rev: Revision (optional)
      *
      * @return string Attachment body
      */
@@ -319,7 +322,7 @@ abstract class tasklist_driver
     /**
      * Helper method to determine whether the given task is considered "complete"
      *
-     * @param array  $task  Hash array with event properties:
+     * @param array  $task  Hash array with event properties
      * @return boolean True if complete, False otherwiese
      */
     public function is_complete($task)
@@ -328,13 +331,74 @@ abstract class tasklist_driver
     }
 
     /**
-     * List availabale categories
-     * The default implementation reads them from config/user prefs
+     * Provide a list of revisions for the given task
+     *
+     * @param array  $task Hash array with task properties:
+     *         id: Task identifier
+     *       list: List identifier
+     *
+     * @return array List of changes, each as a hash array:
+     *         rev: Revision number
+     *        type: Type of the change (create, update, move, delete)
+     *        date: Change date
+     *        user: The user who executed the change
+     *          ip: Client IP
+     *     mailbox: Destination list for 'move' type
      */
-    public function list_categories()
+    public function get_task_changelog($task)
     {
-        $rcmail = rcube::get_instance();
-        return $rcmail->config->get('tasklist_categories', array());
+        return false;
+    }
+
+    /**
+     * Get a list of property changes beteen two revisions of a task object
+     *
+     * @param array  $task Hash array with task properties:
+     *         id: Task identifier
+     *       list: List identifier
+     * @param mixed  $rev1   Old Revision
+     * @param mixed  $rev2   New Revision
+     *
+     * @return array List of property changes, each as a hash array:
+     *    property: Revision number
+     *         old: Old property value
+     *         new: Updated property value
+     */
+    public function get_task_diff($task, $rev1, $rev2)
+    {
+        return false;
+    }
+
+    /**
+     * Return full data of a specific revision of an event
+     *
+     * @param mixed  $task UID string or hash array with task properties:
+     *         id: Task identifier
+     *       list: List identifier
+     * @param mixed  $rev Revision number
+     *
+     * @return array Task object as hash array
+     * @see self::get_task()
+     */
+    public function get_task_revison($task, $rev)
+    {
+        return false;
+    }
+
+    /**
+     * Command the backend to restore a certain revision of a task.
+     * This shall replace the current object with an older version.
+     *
+     * @param mixed  $task UID string or hash array with task properties:
+     *         id: Task identifier
+     *       list: List identifier
+     * @param mixed  $rev Revision number
+     *
+     * @return boolean True on success, False on failure
+     */
+    public function restore_task_revision($task, $rev)
+    {
+        return false;
     }
 
     /**
@@ -356,6 +420,24 @@ abstract class tasklist_driver
         }
 
         return $html;
+    }
+
+    /**
+     * Compose an URL for CalDAV access to the given list (if configured)
+     */
+    public function tasklist_caldav_url($list)
+    {
+        $rcmail = rcube::get_instance();
+        if (!empty($list['caldavuid']) && ($template = $rcmail->config->get('calendar_caldav_url', null))) {
+            return strtr($template, array(
+                '%h' => $_SERVER['HTTP_HOST'],
+                '%u' => urlencode($rcmail->get_user_name()),
+                '%i' => urlencode($list['caldavuid']),
+                '%n' => urlencode($list['editname']),
+            ));
+        }
+
+        return null;
     }
 
     /**

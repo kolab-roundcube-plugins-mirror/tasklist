@@ -156,6 +156,7 @@ class tasklist_ui
         $this->plugin->register_handler('plugin.identity_select', array($this, 'identity_select'));
         $this->plugin->register_handler('plugin.edit_attendees_notify', array($this, 'edit_attendees_notify'));
         $this->plugin->register_handler('plugin.task_rsvp_buttons', array($this->plugin->itip, 'itip_rsvp_buttons'));
+        $this->plugin->register_handler('plugin.object_changelog_table', array('libkolab', 'object_changelog_table'));
 
         jqueryui::tagedit();
 
@@ -165,6 +166,7 @@ class tasklist_ui
         // include kolab folderlist widget if available
         if (in_array('libkolab', $this->plugin->api->loaded_plugins())) {
             $this->plugin->api->include_script('libkolab/js/folderlist.js');
+            $this->plugin->api->include_script('libkolab/js/audittrail.js');
         }
     }
 
@@ -248,6 +250,7 @@ class tasklist_ui
             $prop['sortable']    = $this->plugin->driver->sortable;
             $prop['attachments'] = $this->plugin->driver->attachments;
             $prop['attendees']   = $this->plugin->driver->attendees;
+            $prop['caldavurl']   = $this->plugin->driver->tasklist_caldav_url($prop);
             $jsenv[$id] = $prop;
         }
 
@@ -352,6 +355,7 @@ class tasklist_ui
      */
     function alarm_select($attrib = array())
     {
+        $attrib['_type'] = 'task';
         return $this->plugin->lib->alarm_select($attrib, $this->plugin->driver->alarm_types, $this->plugin->driver->alarm_absolute);
     }
 

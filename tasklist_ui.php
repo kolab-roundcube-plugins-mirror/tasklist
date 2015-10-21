@@ -256,7 +256,7 @@ class tasklist_ui
 
         $classes = array('tasklist');
         $title = $prop['title'] ?: ($prop['name'] != $prop['listname'] || strlen($prop['name']) > 25 ?
-          html_entity_decode($prop['name'], ENT_COMPAT, RCMAIL_CHARSET) : '');
+          html_entity_decode($prop['name'], ENT_COMPAT, RCUBE_CHARSET) : '');
 
         if ($prop['virtual'])
             $classes[] = 'virtual';
@@ -435,7 +435,7 @@ class tasklist_ui
             $attrib['id'] = 'rcmtaskuploadform';
 
         // Get max filesize, enable upload progress bar
-        $max_filesize = rcube_upload_init();
+        $max_filesize = $this->rc->upload_init();
 
         $button = new html_inputfield(array('type' => 'button'));
         $input = new html_inputfield(array(
@@ -447,9 +447,9 @@ class tasklist_ui
 
         return html::div($attrib,
             html::div(null, $input->show()) .
-            html::div('formbuttons', $button->show(rcube_label('upload'), array('class' => 'button mainaction',
-                'onclick' => JS_OBJECT_NAME . ".upload_file(this.form)"))) .
-            html::div('hint', rcube_label(array('name' => 'maxuploadsize', 'vars' => array('size' => $max_filesize))))
+            html::div('formbuttons', $button->show($this->rc->gettext('upload'), array('class' => 'button mainaction',
+                'onclick' => rcmail_output::JS_OBJECT_NAME . ".upload_file(this.form)"))) .
+            html::div('hint', $this->rc->gettext(array('name' => 'maxuploadsize', 'vars' => array('size' => $max_filesize))))
         );
     }
 

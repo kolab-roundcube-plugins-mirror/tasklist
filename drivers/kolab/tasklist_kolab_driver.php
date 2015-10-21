@@ -1362,7 +1362,7 @@ class tasklist_kolab_driver extends tasklist_driver
         $this->_parse_id($task);
         $list_id = $task['list'];
         if (!$list_id || !($folder = $this->get_folder($list_id))) {
-            raise_error(array(
+            rcube::raise_error(array(
                 'code' => 600, 'type' => 'php',
                 'file' => __FILE__, 'line' => __LINE__,
                 'message' => "Invalid list identifer to save taks: " . var_dump($list_id, true)),
@@ -1399,7 +1399,7 @@ class tasklist_kolab_driver extends tasklist_driver
         $saved  = $folder->save($object, 'task', $task['uid']);
 
         if (!$saved) {
-            raise_error(array(
+            rcube::raise_error(array(
                 'code' => 600, 'type' => 'php',
                 'file' => __FILE__, 'line' => __LINE__,
                 'message' => "Error saving task object to Kolab server"),
@@ -1657,7 +1657,7 @@ class tasklist_kolab_driver extends tasklist_driver
         // add folder ACL tab
         if ($action != 'form-new') {
             $form['sharing'] = array(
-                'name'    => Q($this->plugin->gettext('tabsharing')),
+                'name'    => rcube::Q($this->plugin->gettext('tabsharing')),
                 'content' => html::tag('iframe', array(
                     'src' => $this->rc->url(array('_action' => 'folder-acl', '_folder' => $folder_name, 'framed' => 1)),
                     'width' => '100%',
@@ -1683,7 +1683,7 @@ class tasklist_kolab_driver extends tasklist_driver
                 foreach ($tab['fields'] as $col => $colprop) {
                     $label = !empty($colprop['label']) ? $colprop['label'] : $this->plugin->gettext($col);
 
-                    $table->add('title', html::label($colprop['id'], Q($label)));
+                    $table->add('title', html::label($colprop['id'], rcube::Q($label)));
                     $table->add(null, $colprop['value']);
                 }
                 $content = $table->show();
@@ -1693,7 +1693,7 @@ class tasklist_kolab_driver extends tasklist_driver
             }
 
             if (!empty($content)) {
-                $form_html .= html::tag('fieldset', null, html::tag('legend', null, Q($tab['name'])) . $content) . "\n";
+                $form_html .= html::tag('fieldset', null, html::tag('legend', null, rcube::Q($tab['name'])) . $content) . "\n";
             }
         }
 

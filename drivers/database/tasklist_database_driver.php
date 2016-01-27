@@ -273,7 +273,7 @@ class tasklist_database_driver extends tasklist_driver
     }
 
     /**
-     * Get all taks records matching the given filter
+     * Get all task records matching the given filter
      *
      * @param array Hash array wiht filter criterias
      * @param array List of lists to get tasks from
@@ -584,7 +584,7 @@ class tasklist_database_driver extends tasklist_driver
             join(',', (array)$prop['tags']),
             $prop['flagged'] ? 1 : 0,
             intval($prop['complete']),
-            $prop['status'],
+            strval($prop['status']),
             $prop['alarms'],
             $prop['recurrence'],
             $notify_at

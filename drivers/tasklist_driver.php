@@ -144,7 +144,7 @@ abstract class tasklist_driver
     abstract function count_tasks($lists = null);
 
     /**
-     * Get all taks records matching the given filter
+     * Get all task records matching the given filter
      *
      * @param array Hash array with filter criterias:
      *  - mask:  Bitmask representing the filter selection (check against tasklist::FILTER_MASK_* constants)

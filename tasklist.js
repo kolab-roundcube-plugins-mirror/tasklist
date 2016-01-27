@@ -2271,7 +2271,7 @@ function rcube_tasklist_ui(settings)
     {
         $('#taskshow:ui-dialog').dialog('close');
 
-        var rec = listdata[id] || presets,
+        var selected_list, rec = listdata[id] || presets,
             $dialog = $('<div>'),
             editform = $('#taskedit'),
             list = rec.list && me.tasklists[rec.list] ? me.tasklists[rec.list] :
@@ -2300,7 +2300,7 @@ function rcube_tasklist_ui(settings)
         var complete = $('#taskedit-completeness').val((rec.complete || 0) * 100);
         completeness_slider.slider('value', complete.val());
         var taskstatus = $('#taskedit-status').val(rec.status || '');
-        var tasklist = $('#taskedit-tasklist').val(rec.list || me.selected_list).prop('disabled', rec.parent_id ? true : false);
+        var tasklist = $('#taskedit-tasklist').prop('disabled', rec.parent_id ? true : false);
         var notify = $('#edit-attendees-donotify').get(0);
         var invite = $('#edit-attendees-invite').get(0);
         var comment = $('#edit-attendees-comment');
@@ -2310,9 +2310,15 @@ function rcube_tasklist_ui(settings)
 
         // set tasklist selection according to permissions
         tasklist.find('option').each(function(i, opt) {
-            var l = me.tasklists[opt.value] || {};
-            $(opt).prop('disabled', !(l.editable || (action == 'new' && has_permission(l, 'i'))));
+            var l = me.tasklists[opt.value] || {},
+                writable = l.editable || (action == 'new' && has_permission(l, 'i'));
+            $(opt).prop('disabled', !writable);
+
+            if (!selected_list && writable)
+                selected_list = opt.value;
         });
+
+        tasklist.val(rec.list || me.selected_list || selected_list);
 
         // tag-edit line
         var tagline = $(rcmail.gui_objects.edittagline).empty();

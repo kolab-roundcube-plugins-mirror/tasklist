@@ -254,19 +254,19 @@ class tasklist_database_driver extends tasklist_driver
             join(',', $list_ids)
         ));
 
-        $counts = array('all' => 0, 'flagged' => 0, 'today' => 0, 'tomorrow' => 0, 'overdue' => 0, 'nodate' => 0);
+        $counts = array('all' => 0, 'today' => 0, 'tomorrow' => 0, 'overdue' => 0, 'later' => 0);
         while ($result && ($rec = $this->rc->db->fetch_assoc($result))) {
             $counts['all']++;
-            if ($rec['flagged'])
-                $counts['flagged']++;
             if (empty($rec['date']))
-                $counts['nodate']++;
+                $counts['later']++;
             else if ($rec['date'] == $today)
                 $counts['today']++;
             else if ($rec['date'] == $tomorrow)
                 $counts['tomorrow']++;
             else if ($rec['date'] < $today)
                 $counts['overdue']++;
+            else if ($rec['date'] > $tomorrow)
+                $counts['later']++;
         }
 
         return $counts;
@@ -330,6 +330,10 @@ class tasklist_database_driver extends tasklist_driver
 
         if ($filter['since'] && is_numeric($filter['since'])) {
             $sql_add .= ' AND changed >= ' . $this->rc->db->quote(date('Y-m-d H:i:s', $filter['since']));
+        }
+
+        if ($filter['uid']) {
+            $sql_add .= ' AND `uid` IN (' . implode(',', array_map(array($this->rc->db, 'quote'), $filter['uid'])) . ')';
         }
 
         $tasks = array();
@@ -558,6 +562,9 @@ class tasklist_database_driver extends tasklist_driver
         if (is_array($prop['recurrence'])) {
             $prop['recurrence'] = $this->serialize_recurrence($prop['recurrence']);
         }
+        if (array_key_exists('complete', $prop)) {
+            $prop['complete'] = number_format($prop['complete'], 2, '.', '');
+        }
 
         foreach (array('parent_id', 'date', 'time', 'startdate', 'starttime', 'alarms', 'recurrence', 'status') as $col) {
             if (empty($prop[$col]))
@@ -610,6 +617,9 @@ class tasklist_database_driver extends tasklist_driver
         }
         if (is_array($prop['recurrence'])) {
             $prop['recurrence'] = $this->serialize_recurrence($prop['recurrence']);
+        }
+        if (array_key_exists('complete', $prop)) {
+            $prop['complete'] = number_format($prop['complete'], 2, '.', '');
         }
 
         $sql_set = array();

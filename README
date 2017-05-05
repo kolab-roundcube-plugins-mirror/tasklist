@@ -43,16 +43,16 @@ Download the composer.phar script from https://getcomposer.org
 
 (or import the referred file using your preferred database management app)
 
-5. Enable the calendar plugin
+5. Enable the tasklist plugin
 
   $ cd ../../
   $ edit config/config.inc.php
 
-Add 'calendar' to the list of active plugins:
+Add 'tasklist' to the list of active plugins:
 
   $config['plugins'] = array(
     (...)
-    'calendar',
+    'tasklist',
   );
 
 

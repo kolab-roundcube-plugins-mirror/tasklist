@@ -333,7 +333,7 @@ class tasklist_database_driver extends tasklist_driver
         }
 
         if ($filter['uid']) {
-            $sql_add .= ' AND `uid` IN (' . implode(',', array_map(array($this->rc->db, 'quote'), $filter['uid'])) . ')');
+            $sql_add .= ' AND `uid` IN (' . implode(',', array_map(array($this->rc->db, 'quote'), $filter['uid'])) . ')';
         }
 
         $tasks = array();

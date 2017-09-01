@@ -106,8 +106,8 @@ function rcube_tasklist_ui(settings)
 
     /*  public members  */
     this.tasklists = rcmail.env.tasklists;
-    this.selected_task;
-    this.selected_list;
+    this.selected_task = null;
+    this.selected_list = null;
 
     /*  public methods  */
     this.init = init;
@@ -151,7 +151,7 @@ function rcube_tasklist_ui(settings)
                 me.selected_list = settings.selected_list;
                 $(rcmail.gui_objects.tasklistslist).find("input[value='"+settings.selected_list+"']").prop('checked', true);
             }
-            if (me.tasklists[id].editable && (!me.selected_list || me.tasklists[id].default || (me.tasklists[id].active && !me.tasklists[me.selected_list].active))) {
+            if (me.tasklists[id].editable && (!me.selected_list || me.tasklists[id]['default'] || (me.tasklists[id].active && !me.tasklists[me.selected_list].active))) {
                 me.selected_list = id;
             }
         }
@@ -281,11 +281,15 @@ function rcube_tasklist_ui(settings)
         rcmail.addEventListener('plugin.update_tasklist', update_list);
         rcmail.addEventListener('plugin.destroy_tasklist', destroy_list);
         rcmail.addEventListener('plugin.unlock_saving', unlock_saving);
+        rcmail.addEventListener('plugin.refresh_tagcloud', function() { update_tagcloud(); });
         rcmail.addEventListener('requestrefresh', before_refresh);
         rcmail.addEventListener('plugin.reload_data', function(){
             list_tasks(null, true);
             setTimeout(fetch_counts, 200);
         });
+
+        rcmail.addEventListener('plugin.import_success', function(p){ rctasks.import_success(p); });
+        rcmail.addEventListener('plugin.import_error', function(p){ rctasks.import_error(p); });
 
         rcmail.addEventListener('plugin.task_render_changelog', task_render_changelog);
         rcmail.addEventListener('plugin.task_show_diff', task_show_diff);
@@ -655,9 +659,7 @@ function rcube_tasklist_ui(settings)
         $('#taskedit').tabs({
             activate: function(event, ui) {
                 // reset autocompletion on tab change (#3389)
-                if (ui.oldPanel.selector == '#taskedit-panel-attendees') {
-                    rcmail.ksearch_blur();
-                }
+                rcmail.ksearch_blur();
             }
         });
 
@@ -803,6 +805,90 @@ function rcube_tasklist_ui(settings)
         me.tasklists[list_id].active = false;
         loadstate.lists = active_lists();
     }
+
+    // open a dialog to upload an .ics file with tasks to be imported
+    this.import_tasks = function(tasklist)
+    {
+        // close show dialog first
+        var buttons = {},
+            $dialog = $("#tasksimport"),
+            form = rcmail.gui_objects.importform;
+
+        if ($dialog.is(':ui-dialog'))
+            $dialog.dialog('close');
+
+        if (tasklist)
+            $('#task-import-list').val(tasklist);
+
+        buttons[rcmail.gettext('import', 'tasklist')] = function() {
+            if (form && form.elements._data.value) {
+                rcmail.async_upload_form(form, 'import', function(e) {
+                    rcmail.set_busy(false, null, saving_lock);
+                    saving_lock = null;
+                    $('.ui-dialog-buttonpane button', $dialog.parent()).button('enable');
+
+                    // display error message if no sophisticated response from server arrived (e.g. iframe load error)
+                    if (me.import_succeeded === null)
+                        rcmail.display_message(rcmail.get_label('importerror', 'tasklist'), 'error');
+                });
+
+                // display upload indicator (with extended timeout)
+                var timeout = rcmail.env.request_timeout;
+                rcmail.env.request_timeout = 600;
+                me.import_succeeded = null;
+                saving_lock = rcmail.set_busy(true, 'uploading');
+                $('.ui-dialog-buttonpane button', $dialog.parent()).button('disable');
+
+                // restore settings
+                rcmail.env.request_timeout = timeout;
+            }
+        };
+
+        buttons[rcmail.gettext('cancel', 'tasklist')] = function() {
+            $dialog.dialog("close");
+        };
+
+        // open jquery UI dialog
+        $dialog.dialog({
+            modal: true,
+            resizable: false,
+            closeOnEscape: false,
+            title: rcmail.gettext('importtasks', 'tasklist'),
+            open: function() {
+                $dialog.parent().find('.ui-dialog-buttonset .ui-button').first().addClass('mainaction');
+            },
+            close: function() {
+                $('.ui-dialog-buttonpane button', $dialog.parent()).button('enable');
+                $dialog.dialog("destroy").hide();
+            },
+            buttons: buttons,
+            width: 520
+        }).show();
+    };
+
+    // callback from server if import succeeded
+    this.import_success = function(p)
+    {
+        this.import_succeeded = true;
+        $("#tasksimport:ui-dialog").dialog('close');
+        rcmail.set_busy(false, null, saving_lock);
+        saving_lock = null;
+        rcmail.gui_objects.importform.reset();
+
+        if (p.refetch) {
+            list_tasks(null, true);
+            setTimeout(fetch_counts, 200);
+        }
+    };
+
+    // callback from server to report errors on import
+    this.import_error = function(p)
+    {
+        this.import_succeeded = false;
+        rcmail.set_busy(false, null, saving_lock);
+        saving_lock = null;
+        rcmail.display_message(p.message || rcmail.get_label('importerror', 'tasklist'), 'error');
+    };
 
     // open a tasks export dialog
     this.export_tasks = function()
@@ -2847,6 +2933,9 @@ function rcube_tasklist_ui(settings)
      */
     function match_filter(rec, cache, recursive)
     {
+        if (!rec)
+            return false;
+
         // return cached result
         if (typeof cache[rec.id] != 'undefined' && recursive != 2) {
             return cache[rec.id];
@@ -2886,6 +2975,7 @@ function rcube_tasklist_ui(settings)
         if (recursive != 1) {
             cache[rec.id] = match;
         }
+
         return match;
     }
 
@@ -3235,18 +3325,18 @@ function rcube_tasklist_ui(settings)
     {
       var result = [],
         strlen = str.length,
-        q, p, i, char, last;
+        q, p, i, chr, last;
 
       for (q = p = i = 0; i < strlen; i++) {
-        char = str.charAt(i);
-        if (char == '"' && last != '\\') {
+        chr = str.charAt(i);
+        if (chr == '"' && last != '\\') {
           q = !q;
         }
-        else if (!q && char == delimiter) {
+        else if (!q && chr == delimiter) {
           result.push(str.substring(p, i));
           p = i + 1;
         }
-        last = char;
+        last = chr;
       }
 
       result.push(str.substr(p));
@@ -3396,6 +3486,7 @@ window.rcmail && rcmail.addEventListener('init', function(evt) {
   // register button commands
   rcmail.register_command('newtask', function(){ rctasks.edit_task(null, 'new', {}); }, true);
   rcmail.register_command('print', function(){ rctasks.print_tasks(); }, true);
+  rcmail.register_command('import', function(){ rctasks.import_tasks(rctasks.selected_list); }, true);
 
   rcmail.register_command('list-create', function(){ rctasks.list_edit_dialog(null); }, true);
   rcmail.register_command('list-edit', function(){ rctasks.list_edit_dialog(rctasks.selected_list); }, false);

@@ -51,6 +51,7 @@ class tasklist_ui
             'classsel'   => 'button-tasklist button-selected',
             'innerclass' => 'button-inner',
             'label'      => 'tasklist.navtitle',
+            'type'       => 'link'
         ), 'taskbar');
 
         $this->plugin->include_stylesheet($this->plugin->local_skin_path() . '/tasklist.css');
@@ -158,6 +159,7 @@ class tasklist_ui
         $this->plugin->register_handler('plugin.task_rsvp_buttons', array($this->plugin->itip, 'itip_rsvp_buttons'));
         $this->plugin->register_handler('plugin.object_changelog_table', array('libkolab', 'object_changelog_table'));
         $this->plugin->register_handler('plugin.tasks_export_form', array($this, 'tasks_export_form'));
+        $this->plugin->register_handler('plugin.tasks_import_form', array($this, 'tasks_import_form'));
 
         jqueryui::tagedit();
 
@@ -179,6 +181,10 @@ class tasklist_ui
         $tree = true;
         $jsenv = array();
         $lists = $this->plugin->driver->get_lists(0, $tree);
+
+        if (empty($attrib['id'])) {
+            $attrib['id'] = 'rcmtasklistslist';
+        }
 
         // walk folder tree
         if (is_object($tree)) {
@@ -456,7 +462,7 @@ class tasklist_ui
 
         return html::div($attrib,
             html::div(null, $input->show()) .
-            html::div('formbuttons', $button->show($this->rc->gettext('upload'), array('class' => 'button mainaction',
+            html::div('buttons', $button->show($this->rc->gettext('upload'), array('class' => 'button mainaction',
                 'onclick' => rcmail_output::JS_OBJECT_NAME . ".upload_file(this.form)"))) .
             html::div('hint', $this->rc->gettext(array('name' => 'maxuploadsize', 'vars' => array('size' => $max_filesize))))
         );
@@ -528,6 +534,53 @@ class tasklist_ui
     {
         $checkbox = new html_checkbox(array('name' => '_notify', 'id' => 'edit-attendees-donotify', 'value' => 1));
         return html::div($attrib, html::label(null, $checkbox->show(1) . ' ' . $this->plugin->gettext('sendnotifications')));
+    }
+
+    /**
+     * Form for uploading and importing tasks
+     */
+    function tasks_import_form($attrib = array())
+    {
+        if (!$attrib['id']) {
+            $attrib['id'] = 'rcmImportForm';
+        }
+
+        // Get max filesize, enable upload progress bar
+        $max_filesize = $this->rc->upload_init();
+
+        $accept = '.ics, text/calendar, text/x-vcalendar, application/ics';
+        if (class_exists('ZipArchive', false)) {
+            $accept .= ', .zip, application/zip';
+        }
+
+        $input = new html_inputfield(array(
+                'type'   => 'file',
+                'name'   => '_data',
+                'size'   => $attrib['uploadfieldsize'],
+                'accept' => $accept
+        ));
+
+        $html = html::div('form-section',
+            html::div(null, $input->show())
+            . html::div('hint', $this->rc->gettext(array('name' => 'maxuploadsize', 'vars' => array('size' => $max_filesize))))
+        );
+
+        $html .= html::div('form-section',
+            html::label('task-import-list', $this->plugin->gettext('list'))
+            . $this->tasklist_select(array('name' => 'source', 'id' => 'task-import-list', 'editable' => true))
+        );
+
+        $this->rc->output->add_gui_object('importform', $attrib['id']);
+        $this->rc->output->add_label('import', 'importerror');
+
+        return html::tag('form', array(
+                'action'  => $this->rc->url(array('task' => 'tasklist', 'action' => 'import')),
+                'method'  => 'post',
+                'enctype' => 'multipart/form-data',
+                'id'      => $attrib['id']
+            ),
+            $html
+        );
     }
 
     /**

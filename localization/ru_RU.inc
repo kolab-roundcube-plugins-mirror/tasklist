@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Localizations for the Kolab Tasks plugin
  *
@@ -6,6 +7,8 @@
  *
  * For translation see https://www.transifex.com/projects/p/kolab/resource/tasklist/
  */
+
+$labels = array();
 $labels['navtitle'] = 'Задачи';
 $labels['lists'] = 'Списки задач';
 $labels['list'] = 'Список задач';
@@ -13,6 +16,7 @@ $labels['tags'] = 'Теги';
 $labels['export'] = 'Экспорт';
 $labels['exporttitle'] = 'Экспорт в iCalendar';
 $labels['exportattachments'] = 'С вложениями';
+$labels['currentview'] = 'текущее представление';
 $labels['tasklistsubscribe'] = 'Всегда показывать';
 $labels['listsearchresults'] = 'Доступные списки задач';
 $labels['findlists'] = 'Найти списки задач...';
@@ -22,6 +26,7 @@ $labels['nrtasklistsfound'] = '$nr списков задач найдено';
 $labels['removelist'] = 'Удалить из списка';
 $labels['showcaldavurl'] = 'Показать URL CalDAV';
 $labels['caldavurldescription'] = 'Скопируйте этот адрес в клиент, <a href="http://en.wikipedia.org/wiki/CalDAV" target="_blank">поддерживающий CalDAV</a> (например, Evolution или Mozilla Thunderbird) для синхронизации данного списка задач со своим компьютером или мобильным устройством.';
+
 $labels['newtask'] = 'Новая задача';
 $labels['createtask'] = 'Создать задачу <Enter>';
 $labels['createnewtask'] = 'Создать новую задачу (пример: Суббота, покосить газон)';
@@ -50,6 +55,7 @@ $labels['assignedto'] = 'Назначена';
 $labels['created'] = 'Создана';
 $labels['changed'] = 'Изменена';
 $labels['taskoptions'] = 'Опции';
+
 $labels['all'] = 'Все';
 $labels['flagged'] = 'Отмеченные';
 $labels['complete'] = 'Завершенные';
@@ -67,6 +73,7 @@ $labels['nodate'] = 'без даты';
 $labels['removetag'] = 'Убрать';
 $labels['removelink'] = 'Удалить ссылку на письмо';
 $labels['auto'] = 'Авто';
+
 $labels['taskdetails'] = 'Подробнее';
 $labels['newtask'] = 'Новая задача';
 $labels['edittask'] = 'Редактировать задачу';
@@ -78,11 +85,13 @@ $labels['deletetask'] = 'Удалить задачу';
 $labels['deletethisonly'] = 'Удалить только эту задачу';
 $labels['deletewithchilds'] = 'Удалить задачу и все ее подзадачи';
 $labels['taskactions'] = 'Настройки задачи...';
+
 $labels['tabsummary'] = 'Сводка';
 $labels['tabrecurrence'] = 'Повтор';
 $labels['tabassignments'] = 'Задания';
 $labels['tabattachments'] = 'Вложения';
 $labels['tabsharing'] = 'Поделиться';
+
 $labels['editlist'] = 'Изменить список';
 $labels['createlist'] = 'Добавить список';
 $labels['listactions'] = 'Действия со списком...';
@@ -91,15 +100,20 @@ $labels['showalarms'] = 'Показывать напоминания';
 $labels['import'] = 'Импорт';
 $labels['viewactions'] = 'Просмотр действий';
 $labels['focusview'] = 'Просмотреть только этот список';
+
+// date words
 $labels['on'] = 'в';
 $labels['at'] = 'в';
 $labels['this'] = 'этот';
 $labels['next'] = 'следующий';
 $labels['yes'] = 'да';
+
+// messages
 $labels['savingdata'] = 'Сохранение данных...';
 $labels['errorsaving'] = 'Не удалось сохранить.';
 $labels['notasksfound'] = 'По заданному условию не найдено задач';
 $labels['invalidstartduedates'] = 'Начальная дата не может превышать конечную.';
+$labels['invalidstartduetimes'] = 'Для обоих параметров: "дата начала" и "дата окончания" должно быть указано или не указано время.';
 $labels['recurrencerequiresdate'] = 'Повторяющиеся задачи требуют даты начала или завершения.';
 $labels['deletetasktconfirm'] = 'Вы действительно хотите удалить эту задачу?';
 $labels['deleteparenttasktconfirm'] = 'Вы действительно хотите удалить эту задачу и все ее подзадачи?';
@@ -109,6 +123,8 @@ $labels['aclnorights'] = 'У вас нет административных пр
 $labels['changetaskconfirm'] = 'Обновить задачу';
 $labels['changeconfirmnotifications'] = 'Вы хотите уведомлять участников об изменениях?';
 $labels['partstatupdatenotification'] = 'Вы хотите уведомлять организатора об изменениях статуса?';
+
+// (hidden) titles and labels for accessibility annotations
 $labels['quickaddinput'] = 'Дата и заголовок новой задачи';
 $labels['arialabelquickaddbox'] = 'Быстро создать задачу';
 $labels['arialabelsearchform'] = 'Форма поиска задач';
@@ -116,6 +132,8 @@ $labels['arialabelquicksearchbox'] = 'Поиск задач';
 $labels['arialabellistsearchform'] = 'Форма поиска списка задач';
 $labels['arialabeltaskselector'] = 'Списком';
 $labels['arialabeltasklisting'] = 'Список задач';
+
+// attendees
 $labels['attendee'] = 'Ответственный';
 $labels['role'] = 'Роль';
 $labels['availability'] = 'Доступность';
@@ -137,6 +155,8 @@ $labels['itipupdatemailbody'] = "*\$title*\n\nКогда: \$date\n\nОтветс
 $labels['itipcancelsubject'] = '"$title" была отменена';
 $labels['itipcancelmailbody'] = "*\$title*\n\nКогда: \$date\n\nОтветственные: \$attendees\n\nЭто событие отменено \$organizer.\n\nПожалуйста посмотрите вложение в iCalendar файл которое обновит детали задачи.";
 $labels['saveintasklist'] = 'сохранить в ';
+
+// history dialog
 $labels['taskhistory'] = 'История';
 $labels['objectchangelog'] = 'История изменений';
 $labels['objectdiff'] = 'Изменения с $rev1 до $rev2';
@@ -146,7 +166,10 @@ $labels['objectdiffnotavailable'] = 'Невозможно провести ср�
 $labels['revisionrestoreconfirm'] = 'Вы уверенны, что хотите восстановить этоу задачу из ревизии $rev? Она заменит текущую задачу старой версией. ';
 $labels['objectrestoresuccess'] = 'Ревизия $rev успешно восстановлена';
 $labels['objectrestoreerror'] = 'Не удалось восстановить старую ревизию';
+
+// invitation handling (overrides labels from libcalendaring)
 $labels['itipobjectnotfound'] = 'Задача, упомянутая в этом сообщении, не найдена в вашем списке задач.';
+
 $labels['itipmailbodyaccepted'] = "\$sender принял назначение ответственным за задание:\n\n*\$title*\n\nВыполнить до: \$date\n\nОтветственные: \$attendees";
 $labels['itipmailbodytentative'] = "\$sender предварительно принял назначение ответственным за задание:\n\n*\$title*\n\nВыполнить до: \$date\n\nОтветственные: \$attendees";
 $labels['itipmailbodydeclined'] = "\$sender отказался от назначения ответственным за задание:\n\n*\$title*\n\nВыполнить до: \$date\n\nОтветственные: \$attendees";
@@ -155,12 +178,14 @@ $labels['itipmailbodyin-process'] = "\$sender установил статус \"
 $labels['itipmailbodycompleted'] = "\$sender выполнил задачу:\n\n*\$title*\n\nВыполнить до: \$date";
 $labels['itipmailbodydelegated'] = "\$sender перепоручил(а) задачу:\n\n*\$title*\n\nВыполнить до: \$date";
 $labels['itipmailbodydelegatedto'] = "\$sender перепоручил(а) Вам задачу:\n\n*\$title*\n\nВыполнить до: \$date";
+
 $labels['attendeeaccepted'] = 'Ответственный принял';
 $labels['attendeetentative'] = 'Ответственный предварительно принял';
 $labels['attendeedeclined'] = 'Ответственный отказался';
 $labels['attendeedelegated'] = 'Ответственный перепоручил $delegatedto';
 $labels['attendeein-process'] = 'Ответственный в процессе';
 $labels['attendeecompleted'] = 'Ответственный завершил';
+
 $labels['acceptinvitation'] = 'Вы принимаете это задание?';
 $labels['itipdeclinetask'] = 'Оповестить организатора о вашем отказе от задания';
 $labels['declinedeleteconfirm'] = 'Хотите ли вы так же удалить эту отклонённую задачу из вашего списка задач?';
@@ -170,6 +195,7 @@ $labels['itipsendsuccess'] = 'Уведомление отправлено отв
 $labels['errornotifying'] = 'Не удалось отправить оповещения ответственным';
 $labels['removefromcalendar'] = 'Удалить из моих задач';
 $labels['delegateinvitation'] = 'Назначение представителей';
+
 $labels['andnmore'] = '$nr больше...';
 $labels['delegatedto'] = 'Поручено:';
 $labels['delegatedfrom'] = 'Поручено от:';

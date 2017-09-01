@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Localizations for the Kolab Tasks plugin
  *
@@ -6,6 +7,8 @@
  *
  * For translation see https://www.transifex.com/projects/p/kolab/resource/tasklist/
  */
+
+$labels = array();
 $labels['navtitle'] = 'Aufgaben';
 $labels['lists'] = 'Aufgabenlisten';
 $labels['list'] = 'Aufgabenliste';
@@ -23,6 +26,7 @@ $labels['nrtasklistsfound'] = '$nr Aufgabenlisten gefunden';
 $labels['removelist'] = 'Von der Liste entfernen';
 $labels['showcaldavurl'] = 'CalDAV URL anzeigen';
 $labels['caldavurldescription'] = 'Kopieren dieser Adresse in eine <a href="http://en.wikipedia.org/wiki/CalDAV" target="_blank">CalDAV</a> Client-Anwendung (z.B. Evolution oder Mozilla Thunderbird), um diese spezifische Aufgabenliste mit Ihrem Computer oder Mobilgerät zu synchronisieren.';
+
 $labels['newtask'] = 'Neue Aufgabe';
 $labels['createtask'] = 'Aufgabe erstellen <Enter>';
 $labels['createnewtask'] = 'Neue Aufgabe erstellen (z.B. Samstag, Rasen mähen)';
@@ -51,6 +55,7 @@ $labels['assignedto'] = 'Zugewiesen an';
 $labels['created'] = 'Erstellt';
 $labels['changed'] = 'Zuletzt geändert';
 $labels['taskoptions'] = 'Optionen';
+
 $labels['all'] = 'Alle';
 $labels['flagged'] = 'Markiert';
 $labels['complete'] = 'Abgeschlossen';
@@ -68,6 +73,7 @@ $labels['nodate'] = 'Ohne Datum';
 $labels['removetag'] = 'Entfernen';
 $labels['removelink'] = 'E-Mail-Referenz entfernen';
 $labels['auto'] = 'Automatisch';
+
 $labels['taskdetails'] = 'Details';
 $labels['newtask'] = 'Neue Aufgabe';
 $labels['edittask'] = 'Aufgabe ändern';
@@ -79,11 +85,13 @@ $labels['deletetask'] = 'Aufgabe löschen';
 $labels['deletethisonly'] = 'Nur diese Aufgabe löschen';
 $labels['deletewithchilds'] = 'Mit allen Teilaufgaben löschen';
 $labels['taskactions'] = 'Aufgabeneinstellungen...';
+
 $labels['tabsummary'] = 'Titel';
 $labels['tabrecurrence'] = 'Wiederholung';
 $labels['tabassignments'] = 'Zuweisungen';
 $labels['tabattachments'] = 'Anhänge';
 $labels['tabsharing'] = 'Freigabe';
+
 $labels['editlist'] = 'Liste bearbeiten';
 $labels['createlist'] = 'Liste hinzufügen';
 $labels['listactions'] = 'Listeneinstellungen…';
@@ -92,11 +100,15 @@ $labels['showalarms'] = 'Erinnerungen anzeigen';
 $labels['import'] = 'Importieren';
 $labels['viewactions'] = 'Ansicht-Aktionen';
 $labels['focusview'] = 'Nur diese Liste anzeigen';
+
+// date words
 $labels['on'] = 'am';
 $labels['at'] = 'um';
 $labels['this'] = 'dies';
 $labels['next'] = 'weiter';
 $labels['yes'] = 'Ja';
+
+// messages
 $labels['savingdata'] = 'Daten werden gespeichert…';
 $labels['errorsaving'] = 'Daten konnten nicht gespeichert werden.';
 $labels['notasksfound'] = 'Keine Aufgabe erfüllt die angelegten Kriterien';
@@ -111,6 +123,8 @@ $labels['aclnorights'] = 'Der Zugriff auf diese Aufgabenliste erfordert Administ
 $labels['changetaskconfirm'] = 'Aufgabe ändern';
 $labels['changeconfirmnotifications'] = 'Wollen Sie die beauftragten Teilnehmer über diese Änderung informieren?';
 $labels['partstatupdatenotification'] = 'Wollen Sie den Organisator über die Statusänderung benachrichtigen?';
+
+// (hidden) titles and labels for accessibility annotations
 $labels['quickaddinput'] = 'Neue Aufgabe Datum und Titel';
 $labels['arialabelquickaddbox'] = 'Neue Aufgabe schnell hinzufügen';
 $labels['arialabelsearchform'] = 'Suchformular für Aufgaben';
@@ -118,6 +132,8 @@ $labels['arialabelquicksearchbox'] = 'Sucheingabe für Aufgaben';
 $labels['arialabellistsearchform'] = 'Sucheingabe für Aufgabenlisten';
 $labels['arialabeltaskselector'] = 'Listenmodus';
 $labels['arialabeltasklisting'] = 'Aufgabenauflistung';
+
+// attendees
 $labels['attendee'] = 'Beauftragter';
 $labels['role'] = 'Rolle';
 $labels['availability'] = 'Verfüg.';
@@ -139,6 +155,8 @@ $labels['itipupdatemailbody'] = "*\$title*\n\nFällig: \$date\n\nTeilnehmer: \$a
 $labels['itipcancelsubject'] = '"$title" wurde abgesagt';
 $labels['itipcancelmailbody'] = "*\$title*\n\nFällig: \$date\n\nTeilnehmer: \$attendees\n\nDie Aufgabe wurde durch \$organizer storniert.\n\nAngehängt finden Sie eine iCalendar-Datei mit den aktualisierten Aufgabendetails.";
 $labels['saveintasklist'] = 'speichern in';
+
+// history dialog
 $labels['taskhistory'] = 'Historie';
 $labels['objectchangelog'] = 'Änderungshistorie';
 $labels['objectdiff'] = 'Änderungen aus $rev1 nach $rev2';
@@ -148,7 +166,10 @@ $labels['objectdiffnotavailable'] = 'Vergleich für die gewählten Versionen nic
 $labels['revisionrestoreconfirm'] = 'Möchten Sie wirklich die Version $rev dieser Aufgabe wiederherstellen? Dies wird die aktuelle Aufgabe mit der alten Version ersetzen.';
 $labels['objectrestoresuccess'] = 'Revision $rev erfolgreich wiederhergestellt';
 $labels['objectrestoreerror'] = 'Fehler beim Wiederherstellen der alten Revision';
+
+// invitation handling (overrides labels from libcalendaring)
 $labels['itipobjectnotfound'] = 'Die Aufgabe, auf welche sich diese Nachricht bezieht, wurde nicht in Ihrer Aufgabenliste gefunden.';
+
 $labels['itipmailbodyaccepted'] = "\$sender hat die Zuweisung folgender Aufgabe akzeptiert:\n\n*\$title*\n\nFällig: \$date\n\nVerantwortlich: \$attendees";
 $labels['itipmailbodytentative'] = "\$sender hat die Zuweisung folgender Aufgabe unter Vorbehalt akzeptiert:\n\n*\$title*\n\nFällig: \$date\n\nVerantwortlich: \$attendees";
 $labels['itipmailbodydeclined'] = "\$sender hat die Zuweisung folgender Aufgabe abgeleht:\n\n*\$title*\n\nFällig: \$date\n\nVerantwortlich: \$attendees";
@@ -157,12 +178,14 @@ $labels['itipmailbodyin-process'] = "\$sender hat den Status folgender Aufgabe a
 $labels['itipmailbodycompleted'] = "\$sender hat folgende Aufgabe abgeschlossen:\n\n*\$title*\n\nFällig: \$date";
 $labels['itipmailbodydelegated'] = "\$sender hat folgende Aufgabe delegiert:\n\n*\$title*\n\nFällig: \$date";
 $labels['itipmailbodydelegatedto'] = "\$sender hat folgende Aufgabe an Sie delegiert:\n\n*\$title*\n\nFällig: \$date";
+
 $labels['attendeeaccepted'] = 'Delegierter hat akzeptiert';
 $labels['attendeetentative'] = 'Delegierter hat unter Vorbehalt akzeptiert';
 $labels['attendeedeclined'] = 'Delegierter hat abgelehnt';
 $labels['attendeedelegated'] = 'Zugewiesener hat zu $delegatedto delegiert';
 $labels['attendeein-process'] = 'Delegierter ist in Bearbeitung ';
 $labels['attendeecompleted'] = 'Delegierter hat abgeschlossen';
+
 $labels['acceptinvitation'] = 'Akzeptieren Sie die Zuweisung?';
 $labels['itipdeclinetask'] = 'Lehnen Sie to Zuweisung dieser Aufgabe ab';
 $labels['declinedeleteconfirm'] = 'Möchten Sie diese abgelehnete Aufgabe aus Ihrer Aufgabenliste löschen?';
@@ -172,6 +195,7 @@ $labels['itipsendsuccess'] = 'Benachrichtigung an Delegierte gesendet';
 $labels['errornotifying'] = 'Senden der Benachrichtigung an Delegierte fehlgeschlagen';
 $labels['removefromcalendar'] = 'Aus meinen Aufgaben entfernen';
 $labels['delegateinvitation'] = 'Zuweisung delegieren';
+
 $labels['andnmore'] = '$nr weitere...';
 $labels['delegatedto'] = 'Delegiert an:';
 $labels['delegatedfrom'] = 'Delegiert von:';

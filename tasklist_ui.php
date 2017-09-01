@@ -178,7 +178,7 @@ class tasklist_ui
     {
         $tree = true;
         $jsenv = array();
-        $lists = $this->plugin->driver->get_lists($tree);
+        $lists = $this->plugin->driver->get_lists(0, $tree);
 
         // walk folder tree
         if (is_object($tree)) {
@@ -202,6 +202,7 @@ class tasklist_ui
             }
         }
 
+        $this->rc->output->set_env('source', rcube_utils::get_input_value('source', rcube_utils::INPUT_GET));
         $this->rc->output->set_env('tasklists', $jsenv);
         $this->register_gui_object('tasklistslist', $attrib['id']);
 
@@ -455,7 +456,7 @@ class tasklist_ui
 
         return html::div($attrib,
             html::div(null, $input->show()) .
-            html::div('buttons', $button->show($this->rc->gettext('upload'), array('class' => 'button mainaction',
+            html::div('formbuttons', $button->show($this->rc->gettext('upload'), array('class' => 'button mainaction',
                 'onclick' => rcmail_output::JS_OBJECT_NAME . ".upload_file(this.form)"))) .
             html::div('hint', $this->rc->gettext(array('name' => 'maxuploadsize', 'vars' => array('size' => $max_filesize))))
         );

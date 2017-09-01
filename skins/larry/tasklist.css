@@ -925,7 +925,7 @@ a.morelink:hover {
 	width: 97%;
 }
 
-#taskeditform .buttons {
+#taskeditform .formbuttons {
 	margin: 0.5em 0;
 }
 
@@ -969,7 +969,7 @@ a.morelink:hover {
 
 #taskedit .edit-attendees-table th.invite,
 #taskedit .edit-attendees-table td.invite {
-	width: 50px;
+	width: 48px;
 	padding: 2px;
 }
 

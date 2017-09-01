@@ -255,16 +255,12 @@ class tasklist extends rcube_plugin
             $rec = $this->prepare_task($rec);
             $clone = $this->handle_recurrence($rec, $this->driver->get_task($rec));
             if ($success = $this->driver->edit_task($rec)) {
-                $new_task = $this->driver->get_task($rec);
-                $new_task['tempid'] = $rec['id'];
-                $refresh[] = $new_task;
+                $refresh[] = $this->driver->get_task($rec);
                 $this->cleanup_task($rec);
 
                 // add clone from recurring task
                 if ($clone && $this->driver->create_task($clone)) {
-                    $new_clone = $this->driver->get_task($clone);
-                    $new_clone['tempid'] = $clone['id'];
-                    $refresh[] = $new_clone;
+                    $refresh[] = $this->driver->get_task($clone);
                     $this->driver->clear_alarms($rec['id']);
                 }
 
@@ -275,7 +271,6 @@ class tasklist extends rcube_plugin
                         if ($this->driver->move_task($child)) {
                             $r = $this->driver->get_task($child);
                             if ((bool)($filter & self::FILTER_MASK_COMPLETE) == $this->driver->is_complete($r)) {
-                                $r['tempid'] = $cid;
                                 $refresh[] = $r;
                             }
                         }
@@ -333,7 +328,10 @@ class tasklist extends rcube_plugin
                 }
                 // update parent task to adjust list of children
                 if (!empty($oldrec['parent_id'])) {
-                    $refresh[] = $this->driver->get_task(array('id' => $oldrec['parent_id'], 'list' => $rec['list']));
+                    $parent = array('id' => $oldrec['parent_id'], 'list' => $rec['list']);
+                    if ($parent = $this->driver->get_task()) {
+                        $refresh[] = $parent;
+                    }
                 }
             }
 
@@ -567,9 +565,6 @@ class tasklist extends rcube_plugin
                     $this->encode_task($refresh[$i]);
             }
             $this->rc->output->command('plugin.update_task', $refresh);
-        }
-        else if ($success && ($action == 'delete' || $action == 'undelete')) {
-            $this->rc->output->command('plugin.refresh_tagcloud');
         }
     }
 
@@ -1239,8 +1234,8 @@ class tasklist extends rcube_plugin
 
         // convert link URIs references into structs
         if (array_key_exists('links', $rec)) {
-            foreach ((array) $rec['links'] as $i => $link) {
-                if (strpos($link, 'imap://') === 0 && ($msgref = $this->driver->get_message_reference($link, 'task'))) {
+            foreach ((array)$rec['links'] as $i => $link) {
+                if (strpos($link, 'imap://') === 0 && ($msgref = $this->driver->get_message_reference($link))) {
                     $rec['links'][$i] = $msgref;
                 }
             }
@@ -1798,7 +1793,7 @@ class tasklist extends rcube_plugin
                     'class' => 'messagetasklink',
                     'rel' => $task['id'] . '@' . $task['list'],
                     'target' => '_blank',
-                ), rcube::Q($task['title']))
+                ), Q($task['title']))
             );
         }
         if (count($links)) {
@@ -1871,9 +1866,12 @@ class tasklist extends rcube_plugin
     /**
      * Get properties of the tasklist this user has specified as default
      */
-    public function get_default_tasklist($sensitivity = null)
+    public function get_default_tasklist($sensitivity = null, $lists = null)
     {
-        $lists = $this->driver->get_lists();
+        if ($lists === null) {
+            $lists = $this->driver->get_lists(tasklist_driver::FILTER_PERSONAL | tasklist_driver::FILTER_WRITEABLE);
+        }
+
         $list = null;
 
         foreach ($lists as $l) {
@@ -2005,15 +2003,19 @@ class tasklist extends rcube_plugin
                 unset($task['comment']);
             }
 
+            $mode = tasklist_driver::FILTER_PERSONAL
+                | tasklist_driver::FILTER_SHARED
+                | tasklist_driver::FILTER_WRITEABLE;
+
             // find writeable list to store the task
             $list_id = !empty($_REQUEST['_folder']) ? rcube_utils::get_input_value('_folder', rcube_utils::INPUT_POST) : null;
-            $lists   = $this->driver->get_lists();
+            $lists   = $this->driver->get_lists($mode);
             $list    = $lists[$list_id];
             $dontsave = ($_REQUEST['_folder'] === '' && $task['_method'] == 'REQUEST');
 
             // select default list except user explicitly selected 'none'
             if (!$list && !$dontsave) {
-                $list = $this->get_default_tasklist($task['sensitivity']);
+                $list = $this->get_default_tasklist($task['sensitivity'], $lists);
             }
 
             $metadata = array(
@@ -2061,7 +2063,7 @@ class tasklist extends rcube_plugin
                 $task['list'] = $list['id'];
 
                 // check for existing task with the same UID
-                $existing = $this->driver->get_task($task['uid']);
+                $existing = $this->find_task($task['uid'], $mode);
 
                 if ($existing) {
                     // only update attendee status
@@ -2226,6 +2228,28 @@ class tasklist extends rcube_plugin
     }
 
     /**
+     * Find a task in user tasklists
+     */
+    protected function find_task($task, &$mode)
+    {
+        $this->load_driver();
+
+        // We search for writeable folders in personal namespace by default
+        $mode   = tasklist_driver::FILTER_WRITEABLE | tasklist_driver::FILTER_PERSONAL;
+        $result = $this->driver->get_task($task, $mode);
+
+        // ... now check shared folders if not found
+        if (!$result) {
+            $result = $this->driver->get_task($task, tasklist_driver::FILTER_WRITEABLE | tasklist_driver::FILTER_SHARED);
+            if ($result) {
+                $mode |= tasklist_driver::FILTER_SHARED;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Handler for task/itip-status requests
      */
     public function task_itip_status()
@@ -2233,13 +2257,14 @@ class tasklist extends rcube_plugin
         $data = rcube_utils::get_input_value('data', rcube_utils::INPUT_POST, true);
 
         // find local copy of the referenced task
-        $existing = $this->driver->get_task($data);
-        $itip     = $this->load_itip();
-        $response = $itip->get_itip_status($data, $existing);
+        $existing  = $this->find_task($data, $mode);
+        $is_shared = $mode & tasklist_driver::FILTER_SHARED;
+        $itip      = $this->load_itip();
+        $response  = $itip->get_itip_status($data, $existing);
 
         // get a list of writeable lists to save new tasks to
-        if (!$existing && $response['action'] == 'rsvp' || $response['action'] == 'import') {
-            $lists  = $this->driver->get_lists();
+        if ((!$existing || $is_shared) && $response['action'] == 'rsvp' || $response['action'] == 'import') {
+            $lists  = $this->driver->get_lists($mode);
             $select = new html_select(array('name' => 'tasklist', 'id' => 'itip-saveto', 'is_escaped' => true));
             $select->add('--', '');
 
@@ -2251,9 +2276,9 @@ class tasklist extends rcube_plugin
         }
 
         if ($select) {
-            $default_list = $this->get_default_tasklist($data['sensitivity']);
+            $default_list = $this->get_default_tasklist($data['sensitivity'], $lists);
             $response['select'] = html::span('folder-select', $this->gettext('saveintasklist') . '&nbsp;' .
-                $select->show($default_list['id']));
+                $select->show($is_shared ? $existing['list'] : $default_list['id']));
         }
 
         $this->rc->output->command('plugin.update_itip_object_status', $response);

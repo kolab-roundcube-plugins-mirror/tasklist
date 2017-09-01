@@ -197,8 +197,6 @@ $labels['removefromcalendar'] = 'Remove from my tasks';
 $labels['delegateinvitation'] = 'Delegate assignment';
 
 $labels['andnmore'] = '$nr more...';
-$labels['delegatedto'] = 'Delegated to: ';
-$labels['delegatedfrom'] = 'Delegated from: ';
 $labels['savetotasklist'] = 'Save to tasks';
 $labels['comment'] = 'Comment';
 $labels['errorimportingtask'] = 'Failed to import task(s)';

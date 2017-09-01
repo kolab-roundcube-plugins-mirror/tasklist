@@ -89,7 +89,7 @@ class tasklist_database_driver extends tasklist_driver
     /**
      * Get a list of available tasks lists from this source
      */
-    public function get_lists()
+    public function get_lists($filter = 0)
     {
       // attempt to create a default list for this user
       if (empty($this->lists)) {
@@ -333,7 +333,7 @@ class tasklist_database_driver extends tasklist_driver
         }
 
         if ($filter['uid']) {
-            $sql_add .= ' AND `uid` IN (' . implode(',', array_map(array($this->rc->db, 'quote'), $filter['uid'])) . ')';
+            $sql_add .= ' AND `uid` IN (' . implode(',', array_map(array($this->rc->db, 'quote'), $filter['uid'])) . ')');
         }
 
         $tasks = array();
@@ -361,10 +361,13 @@ class tasklist_database_driver extends tasklist_driver
     /**
      * Return data of a specific task
      *
-     * @param mixed  Hash array with task properties or task UID
+     * @param mixed   Hash array with task properties or task UID
+     * @param integer Bitmask defining filter criterias.
+     *                See FILTER_* constants for possible values.
+     *
      * @return array Hash array with task properties or false if not found
      */
-    public function get_task($prop)
+    public function get_task($prop, $filter = 0)
     {
         if (is_string($prop))
             $prop['uid'] = $prop;

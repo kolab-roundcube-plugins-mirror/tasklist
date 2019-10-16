@@ -4,13 +4,22 @@ A task management module for Roundcube
 This plugin currently supports a local database as well as a Kolab groupware
 server as backends for tasklists and todo items storage.
 
+
+REQUIREMENTS
+------------
+
+Some functions are shared with other plugins and therefore being moved to
+library plugins. Thus in order to run the tasklist plugin, you also need the
+following plugins installed:
+
+* libcalendaring [1]
+* libkolab [1]
+
+
 INSTALLATION
 ------------
 
-The preferred and automated way to install the tasklist with all requirements
-is via the Roundcube plugin repository: https://plugins.roundcube.net
-
-For a manual installation of the tasklist plugin (and its dependencies),
+For a manual installation of the plugin (and its dependencies),
 execute the following steps. This will set it up with the database backend
 driver.
 
@@ -21,31 +30,25 @@ driver.
   $ cd /<path-to-roundcube>/plugins
   $ cp -r /tmp/roundcubemail-plugins-kolab/plugins/tasklist .
   $ cp -r /tmp/roundcubemail-plugins-kolab/plugins/libcalendaring .
+  $ cp -r /tmp/roundcubemail-plugins-kolab/plugins/libkolab .
 
-2. Install the dependencies with Composer
-
-(This has to be done from the Roundcube root directory)
-
-  $ cd /<path-to-roundcube>
-  $ php composer.phar require sabre/vobject 3.3.3
-
-Download the composer.phar script from https://getcomposer.org
-
-3. Create plugin configuration
+2. Create tasklist plugin configuration
 
   $ cd tasklist/
   $ cp config.inc.php.dist config.inc.php
   $ edit config.inc.php
 
-4. Initialize the plugin's database tables
+3. Initialize the tasklist database tables
 
-  $ mysql roundcubemail < drivers/database/SQL/mysql.initial.sql
+  $ cd ../../
+  $ bin/initdb.sh --dir=plugins/tasklist/drivers/database/SQL
 
-(or import the referred file using your preferred database management app)
+4. Build css styles for the Elastic skin
+
+  $ lessc --relative-urls -x plugins/libkolab/skins/elastic/libkolab.less > plugins/libkolab/skins/elastic/libkolab.min.css
 
 5. Enable the tasklist plugin
 
-  $ cd ../../
   $ edit config/config.inc.php
 
 Add 'tasklist' to the list of active plugins:
@@ -59,5 +62,8 @@ Add 'tasklist' to the list of active plugins:
 IMPORTANT
 ---------
 
-This plugin doesn't work with the classic skin of Roundcube because no
+This plugin doesn't work with the Classic skin of Roundcube because no
 templates are available for that skin.
+
+Use Roundcube `skins_allowed` option to limit skins available to the user
+or remove incompatible skins from the skins folder.

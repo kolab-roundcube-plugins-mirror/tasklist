@@ -421,7 +421,7 @@ class tasklist_database_driver extends tasklist_driver
                 "SELECT `task_id` AS id FROM " . $this->db_tasks
                 . " WHERE `tasklist_id` IN (" . $this->list_ids . ")"
                     . " AND `parent_id` IN (" . join(',', array_map(array($this->rc->db, 'quote'), $task_ids)) . ")"
-                    . " AND `del` = 0",
+                    . " AND `del` = 0"
             );
 
             $task_ids = array();
@@ -470,7 +470,7 @@ class tasklist_database_driver extends tasklist_driver
             $result = $this->rc->db->query("SELECT * FROM " . $this->db_tasks
                 . " WHERE `tasklist_id` IN (" . join(',', $list_ids) . ")"
                     . " AND `notify` <= " . $this->rc->db->fromunixtime($time)
-                    . " AND NOT " . self::IS_COMPLETE_SQL,
+                    . " AND NOT " . self::IS_COMPLETE_SQL
             );
 
             while ($result && ($rec = $this->rc->db->fetch_assoc($result))) {

@@ -118,8 +118,8 @@ class tasklist_database_driver extends tasklist_driver
              . " VALUES (?, ?, ?, ?)",
             $this->rc->user->ID,
             strval($prop['name']),
-            strval($prop['color']),
-            $prop['showalarms'] ? 1 : 0
+            isset($prop['color']) ? strval($prop['color']) : '',
+            !empty($prop['showalarms']) ? 1 : 0
         );
 
         if ($result) {
@@ -143,8 +143,8 @@ class tasklist_database_driver extends tasklist_driver
             "UPDATE " . $this->db_lists . " SET `name` = ?, `color` = ?, `showalarms` = ?"
              . " WHERE `tasklist_id` = ? AND `user_id` = ?",
             strval($prop['name']),
-            strval($prop['color']),
-            $prop['showalarms'] ? 1 : 0,
+            isset($prop['color']) ? strval($prop['color']) : '',
+            !empty($prop['showalarms']) ? 1 : 0,
             $prop['id'],
             $this->rc->user->ID
         );
@@ -163,7 +163,7 @@ class tasklist_database_driver extends tasklist_driver
     {
         $hidden = array_flip(explode(',', $this->rc->config->get('hidden_tasklists', '')));
 
-        if ($prop['active']) {
+        if (!empty($prop['active'])) {
             unset($hidden[$prop['id']]);
         }
         else {
@@ -291,56 +291,53 @@ class tasklist_database_driver extends tasklist_driver
         $sql_add  = '';
 
         // add filter criteria
-        if ($filter['from'] || ($filter['mask'] & tasklist::FILTER_MASK_TODAY)) {
-            $sql_add .= " AND (`date` IS NULL OR `date` >= ?)";
-            $datefrom = $filter['from'];
-        }
-        if ($filter['to']) {
-            if ($filter['mask'] & tasklist::FILTER_MASK_OVERDUE) {
-                $sql_add .= " AND (`date` IS NOT NULL AND `date` <= " . $this->rc->db->quote($filter['to']) . ")";
+        if ($filter) {
+            if (!empty($filter['from']) || ($filter['mask'] & tasklist::FILTER_MASK_TODAY)) {
+                $sql_add .= " AND (`date` IS NULL OR `date` >= " . $this->rc->db->quote($filter['from']) . ")";
             }
-            else {
-                $sql_add .= " AND (`date` IS NULL OR `date` <= " . $this->rc->db->quote($filter['to']) . ")";
+
+            if (!empty($filter['to'])) {
+                if ($filter['mask'] & tasklist::FILTER_MASK_OVERDUE) {
+                    $sql_add .= " AND (`date` IS NOT NULL AND `date` <= " . $this->rc->db->quote($filter['to']) . ")";
+                }
+                else {
+                    $sql_add .= " AND (`date` IS NULL OR `date` <= " . $this->rc->db->quote($filter['to']) . ")";
+                }
             }
-        }
 
-        // special case 'today': also show all events with date before today
-        if ($filter['mask'] & tasklist::FILTER_MASK_TODAY) {
-            $datefrom = date('Y-m-d', 0);
-        }
-
-        if ($filter['mask'] & tasklist::FILTER_MASK_NODATE) {
-            $sql_add = " AND `date` IS NULL";
-        }
-
-        if ($filter['mask'] & tasklist::FILTER_MASK_COMPLETE) {
-            $sql_add .= " AND " . self::IS_COMPLETE_SQL;
-        }
-        else if (empty($filter['since'])) {
-            // don't show complete tasks by default
-            $sql_add .= " AND NOT " . self::IS_COMPLETE_SQL;
-        }
-
-        if ($filter['mask'] & tasklist::FILTER_MASK_FLAGGED) {
-            $sql_add .= " AND `flagged` = 1";
-        }
-
-        // compose (slow) SQL query for searching
-        // FIXME: improve searching using a dedicated col and normalized values
-        if ($filter['search']) {
-            $sql_query = array();
-            foreach (array('title', 'description', 'organizer', 'attendees') as $col) {
-                $sql_query[] = $this->rc->db->ilike($col, '%' . $filter['search'] . '%');
+            if ($filter['mask'] & tasklist::FILTER_MASK_NODATE) {
+                $sql_add = " AND `date` IS NULL";
             }
-            $sql_add = " AND (" . join(" OR ", $sql_query) . ")";
-        }
 
-        if ($filter['since'] && is_numeric($filter['since'])) {
-            $sql_add .= " AND `changed` >= " . $this->rc->db->quote(date('Y-m-d H:i:s', $filter['since']));
-        }
+            if ($filter['mask'] & tasklist::FILTER_MASK_COMPLETE) {
+                $sql_add .= " AND " . self::IS_COMPLETE_SQL;
+            }
+            else if (empty($filter['since'])) {
+                // don't show complete tasks by default
+                $sql_add .= " AND NOT " . self::IS_COMPLETE_SQL;
+            }
 
-        if ($filter['uid']) {
-            $sql_add .= " AND `uid` IN (" . implode(',', array_map(array($this->rc->db, 'quote'), $filter['uid'])) . ")";
+            if ($filter['mask'] & tasklist::FILTER_MASK_FLAGGED) {
+                $sql_add .= " AND `flagged` = 1";
+            }
+
+            // compose (slow) SQL query for searching
+            // FIXME: improve searching using a dedicated col and normalized values
+            if ($filter['search']) {
+                $sql_query = array();
+                foreach (array('title', 'description', 'organizer', 'attendees') as $col) {
+                    $sql_query[] = $this->rc->db->ilike($col, '%' . $filter['search'] . '%');
+                }
+                $sql_add = " AND (" . join(" OR ", $sql_query) . ")";
+            }
+
+            if (!empty($filter['since']) && is_numeric($filter['since'])) {
+                $sql_add .= " AND `changed` >= " . $this->rc->db->quote(date('Y-m-d H:i:s', $filter['since']));
+            }
+
+            if (!empty($filter['uid'])) {
+                $sql_add .= " AND `uid` IN (" . implode(',', array_map(array($this->rc->db, 'quote'), $filter['uid'])) . ")";
+            }
         }
 
         $tasks = array();
@@ -348,8 +345,7 @@ class tasklist_database_driver extends tasklist_driver
             $result = $this->rc->db->query("SELECT * FROM " . $this->db_tasks
                 . " WHERE `tasklist_id` IN (" . join(',', $list_ids) . ")"
                     . " AND `del` = 0" . $sql_add
-                . " ORDER BY `parent_id`, `task_id` ASC",
-                $datefrom
+                . " ORDER BY `parent_id`, `task_id` ASC"
             );
 
             while ($result && ($rec = $this->rc->db->fetch_assoc($result))) {
@@ -375,12 +371,12 @@ class tasklist_database_driver extends tasklist_driver
             $prop['uid'] = $prop;
         }
 
-        $query_col = $prop['id'] ? 'task_id' : 'uid';
+        $query_col = !empty($prop['id']) ? 'task_id' : 'uid';
 
         $result = $this->rc->db->query("SELECT * FROM " . $this->db_tasks
             . " WHERE `tasklist_id` IN (" . $this->list_ids . ")"
             . " AND `$query_col` = ? AND `del` = 0",
-            $prop['id'] ? $prop['id'] : $prop['uid']
+            !empty($prop['id']) ? $prop['id'] : $prop['uid']
         );
 
         if ($result && ($rec = $this->rc->db->fetch_assoc($result))) {
@@ -557,22 +553,24 @@ class tasklist_database_driver extends tasklist_driver
     public function create_task($prop)
     {
         // check list permissions
-        $list_id = $prop['list'] ? $prop['list'] : reset(array_keys($this->lists));
-        if (!$this->lists[$list_id] || $this->lists[$list_id]['readonly']) {
+        $list_id = !empty($prop['list']) ? $prop['list'] : reset(array_keys($this->lists));
+        if (empty($this->lists[$list_id]) || !empty($this->lists[$list_id]['readonly'])) {
             return false;
         }
 
-        if (is_array($prop['valarms'])) {
+        if (!empty($prop['valarms'])) {
             $prop['alarms'] = $this->serialize_alarms($prop['valarms']);
         }
-        if (is_array($prop['recurrence'])) {
+
+        if (!empty($prop['recurrence'])) {
             $prop['recurrence'] = $this->serialize_recurrence($prop['recurrence']);
         }
-        if (array_key_exists('complete', $prop)) {
+
+        if (array_key_exists('complete', $prop) && !empty($prop['complete'])) {
             $prop['complete'] = number_format($prop['complete'], 2, '.', '');
         }
 
-        foreach (array('parent_id', 'date', 'time', 'startdate', 'starttime', 'alarms', 'recurrence', 'status') as $col) {
+        foreach (array('parent_id', 'date', 'time', 'startdate', 'starttime', 'alarms', 'recurrence', 'status', 'complete') as $col) {
             if (empty($prop[$col])) {
                 $prop[$col] = null;
             }
@@ -594,13 +592,13 @@ class tasklist_database_driver extends tasklist_driver
             $prop['time'],
             $prop['startdate'],
             $prop['starttime'],
-            strval($prop['description']),
-            join(',', (array)$prop['tags']),
-            $prop['flagged'] ? 1 : 0,
+            isset($prop['description']) ? strval($prop['description']) : '',
+            !empty($prop['tags']) ? join(',', (array)$prop['tags']) : '',
+            !empty($prop['flagged']) ? 1 : 0,
             $prop['complete'] ?: 0,
             strval($prop['status']),
-            $prop['alarms'],
-            $prop['recurrence'],
+            isset($prop['alarms']) ? $prop['alarms'] : '',
+            isset($prop['recurrence']) ? $prop['recurrence'] : '',
             $notify_at
         );
 
@@ -621,10 +619,10 @@ class tasklist_database_driver extends tasklist_driver
      */
     public function edit_task($prop)
     {
-        if (is_array($prop['valarms'])) {
+        if (isset($prop['valarms'])) {
             $prop['alarms'] = $this->serialize_alarms($prop['valarms']);
         }
-        if (is_array($prop['recurrence'])) {
+        if (isset($prop['recurrence'])) {
             $prop['recurrence'] = $this->serialize_recurrence($prop['recurrence']);
         }
         if (array_key_exists('complete', $prop)) {
@@ -655,7 +653,7 @@ class tasklist_database_driver extends tasklist_driver
         }
 
         // moved from another list
-        if ($prop['_fromlist'] && ($newlist = $prop['list'])) {
+        if (!empty($prop['_fromlist']) && ($newlist = $prop['list'])) {
             $sql_set[] = $this->rc->db->quote_identifier('tasklist_id') . '=' . $this->rc->db->quote($newlist);
         }
 
@@ -735,10 +733,10 @@ class tasklist_database_driver extends tasklist_driver
      */
     private function _get_notification($task)
     {
-        if ($task['valarms'] && !$this->is_complete($task)) {
+        if (!empty($task['valarms']) && !$this->is_complete($task)) {
             $alarm = libcalendaring::get_next_alarm($task, 'task');
 
-            if ($alarm['time'] && in_array($alarm['action'], $this->alarm_types)) {
+            if (!empty($alarm['time']) && in_array($alarm['action'], $this->alarm_types)) {
                 return date('Y-m-d H:i:s', $alarm['time']);
             }
         }

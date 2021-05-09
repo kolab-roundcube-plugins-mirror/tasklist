@@ -1430,8 +1430,11 @@ function rcube_tasklist_ui(settings)
             )
             .attr('tabindex', '0')
             .attr('aria-labelledby', label_id)
-            .data('id', rec.id)
-            .draggable({
+            .data('id', rec.id);
+
+        // Make the task draggable, but not in the Elastic skin on touch devices, to fix scrolling
+        if (!window.UI || !UI.is_touch || !window.UI.is_touch()) {
+            div.draggable({
                 revert: 'invalid',
                 addClasses: false,
                 cursorAt: { left:-10, top:12 },
@@ -1442,6 +1445,7 @@ function rcube_tasklist_ui(settings)
                 drag: task_draggable_move,
                 revertDuration: 300
             });
+        }
 
         if (window.kolab_tags_text_block) {
             var tags = rec.tags || [];

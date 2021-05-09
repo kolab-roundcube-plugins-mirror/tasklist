@@ -1682,7 +1682,7 @@ class tasklist_kolab_driver extends tasklist_driver
         if (strlen($folder_name)) {
             $path_imap = explode($delim, $folder_name);
             array_pop($path_imap);  // pop off name part
-            $path_imap = implode($path_imap, $delim);
+            $path_imap = implode($delim, $path_imap);
 
             $options = $storage->folder_info($folder_name);
         }

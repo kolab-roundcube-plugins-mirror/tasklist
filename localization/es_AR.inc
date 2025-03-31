@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Localizations for the Kolab Tasks plugin
  *
@@ -137,7 +138,7 @@ $labels['sendinvitations'] = 'Enviar invitaciones';
 $labels['sendnotifications'] = 'Notificar a los asignados sobre las modificaciones';
 $labels['sendcancellation'] = 'Notificar a los asignados sobre la cancelación de la tarea';
 $labels['invitationsubject'] = 'Ha sido asignado a "$title"';
-$labels['invitationmailbody'] = "*\$title*\n\nVencimiento: \$date\n\nAsignados: \$attendees\n\n$descripcion\n\nEncontrará adjunto un archivo iCalendar con todos los detalles de la tarea, el cual puede importar a su aplicación de tareas.";
+$labels['invitationmailbody'] = "*\$title*\n\nVencimiento: \$date\n\nAsignados: \$attendees\n\n\$descripcion\n\nEncontrará adjunto un archivo iCalendar con todos los detalles de la tarea, el cual puede importar a su aplicación de tareas.";
 $labels['itipupdatesubject'] = '"$title" ha sido actualizado';
 $labels['itipupdatesubjectempty'] = 'Una tarea que le interesa ha sido actualizada';
 $labels['itipupdatemailbody'] = "*\$title*\n\nVencimiento: \$date\n\nAsignados: \$attendees\n\Encontrará adjunto un archivo iCalendar con todos los detalles de la tarea, el cual puede importar a su aplicación de tareas.";

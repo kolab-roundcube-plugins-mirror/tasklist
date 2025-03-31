@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Localizations for the Kolab Tasks plugin
  *

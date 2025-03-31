@@ -1,7 +1,6 @@
 /**
  * Roundcube Tasklist plugin database
  *
- * @version @package_version@
  * @author Thomas Bruederli
  * @licence GNU AGPL
  * @copyright (C) 2012, Kolab Systems AG
@@ -17,7 +16,7 @@ CREATE TABLE IF NOT EXISTS `tasklists` (
   KEY `user_id` (`user_id`),
   CONSTRAINT `fk_tasklist_user_id` FOREIGN KEY (`user_id`)
     REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) /*!40000 ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci */;
+) ROW_FORMAT=DYNAMIC ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `tasks` (
   `task_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -47,6 +46,6 @@ CREATE TABLE IF NOT EXISTS `tasks` (
   KEY `uid` (`uid`),
   CONSTRAINT `fk_tasks_tasklist_id` FOREIGN KEY (`tasklist_id`)
     REFERENCES `tasklists`(`tasklist_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) /*!40000 ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci */;
+) ROW_FORMAT=DYNAMIC ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-REPLACE INTO `system` (`name`, `value`) VALUES ('tasklist-database-version', '2014051900');
+REPLACE INTO `system` (`name`, `value`) VALUES ('tasklist-database-version', '2021102600');

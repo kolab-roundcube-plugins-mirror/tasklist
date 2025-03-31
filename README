@@ -1,7 +1,7 @@
 A task management module for Roundcube
 --------------------------------------
 
-This plugin currently supports a local database as well as a Kolab groupware
+This plugin currently supports a local database, CalDAV server or a Kolab groupware
 server as backends for tasklists and todo items storage.
 
 
@@ -43,7 +43,7 @@ driver.
   $ cd ../../
   $ bin/initdb.sh --dir=plugins/tasklist/drivers/database/SQL
 
-4. Build css styles for the Elastic skin
+4. Build css styles for the Elastic skin (if needed)
 
   $ lessc --relative-urls -x plugins/libkolab/skins/elastic/libkolab.less > plugins/libkolab/skins/elastic/libkolab.min.css
 

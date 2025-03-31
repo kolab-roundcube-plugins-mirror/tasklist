@@ -177,7 +177,7 @@ function rcube_tasklist_ui(settings)
         });
         tasklists_widget.addEventListener('select', function(node) {
             var id = $(this).data('id');
-            rcmail.enable_command('list-edit', me.has_permission(me.tasklists[node.id], 'wa'));
+            rcmail.enable_command('list-edit', me.has_permission(me.tasklists[node.id], 'xwa'));
             rcmail.enable_command('list-delete', me.has_permission(me.tasklists[node.id], 'xa'));
             rcmail.enable_command('list-import', me.has_permission(me.tasklists[node.id], 'i'));
             rcmail.enable_command('list-remove', me.tasklists[node.id] && me.tasklists[node.id].removable);
@@ -296,7 +296,7 @@ function rcube_tasklist_ui(settings)
         rcmail.addEventListener('plugin.update_tasklist', update_list);
         rcmail.addEventListener('plugin.destroy_tasklist', destroy_list);
         rcmail.addEventListener('plugin.unlock_saving', unlock_saving);
-        rcmail.addEventListener('plugin.refresh_tagcloud', function() { update_tagcloud(); });
+        rcmail.addEventListener('plugin.refresh_tagcloud', function() { update_taglist(); });
         rcmail.addEventListener('requestrefresh', before_refresh);
         rcmail.addEventListener('plugin.reload_data', function(){
             list_tasks(null, true);
@@ -2755,10 +2755,10 @@ function rcube_tasklist_ui(settings)
      */
     function task_show_attachments(list, container, task, edit)
     {
-      libkolab.list_attachments(list, container, edit, task,
-        function(id) { remove_attachment(id); },
-        function(data) { load_attachment(data); }
-      );
+        libkolab.list_attachments(list, container, edit, task,
+            function(id) { remove_attachment(id); },
+            function(data) { load_attachment(data); }
+        );
     };
 
     /**
@@ -3179,8 +3179,10 @@ function rcube_tasklist_ui(settings)
         }
 
         if (me.tasklists[id] && li) {
+            prop = $.extend({}, me.tasklists[id], prop);
             delete me.tasklists[id];
             me.tasklists[prop.id] = prop;
+
             $(li).find('input').first().val(prop.id);
             $(li).find('.listname').first().html(Q(prop.name));
             tasklists_widget.update(id, {id: prop.id, html: $(li).children().first()});

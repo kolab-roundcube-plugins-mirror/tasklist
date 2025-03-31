@@ -8,7 +8,7 @@
  * For translation see https://www.transifex.com/projects/p/kolab/resource/tasklist/
  */
 
-$labels = array();
+$labels = [];
 $labels['navtitle'] = 'Tasks';
 $labels['lists'] = 'Tasklists';
 $labels['list'] = 'Tasklist';
@@ -93,6 +93,7 @@ $labels['tabassignments'] = 'Assignments';
 $labels['tabattachments'] = 'Attachments';
 $labels['tabsharing'] = 'Sharing';
 
+$labels['edlist'] = 'Edit list';
 $labels['editlist'] = 'Edit/Share list';
 $labels['deletelist'] = 'Delete list';
 $labels['createlist'] = 'Add list';

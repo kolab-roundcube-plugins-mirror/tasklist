@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Localizations for the Kolab Tasks plugin
  *
@@ -26,13 +27,17 @@ $labels['taskoptions'] = '옵션';
 $labels['all'] = '전체';
 $labels['today'] = '오늘';
 $labels['tomorrow'] = '내일';
+$labels['later'] = '이후에';
 $labels['save'] = '저장';
 $labels['cancel'] = '취소';
 $labels['tabsummary'] = '요약';
 $labels['tabrecurrence'] = '반복';
+$labels['tabattachments'] = '첨부';
+$labels['tabsharing'] = '공우';
 $labels['listname'] = '이름';
 $labels['showalarms'] = '알림 보이기';
 $labels['savingdata'] = '자료 저장중...';
+$labels['role'] = '역할';
 $labels['availability'] = '가능';
 $labels['confirmstate'] = '상태';
 $labels['roleorganizer'] = '주최자';
@@ -40,7 +45,10 @@ $labels['rolerequired'] = '필수';
 $labels['roleoptional'] = '선택';
 $labels['rolechair'] = '좌석';
 $labels['sendinvitations'] = '초대장 보내기';
+$labels['itipupdatesubject'] = '"$title" 이 변경되었습니다';
+$labels['itipcancelsubject'] = '"$title" 이 취소되었습니다';
 $labels['taskhistory'] = '이력';
+$labels['objectchangelog'] = '이력 변경';
 $labels['objectrestoreerror'] = '이전 버전으로 복구하지 못하였습니다';
 $labels['andnmore'] = '$nr 더...';
 $labels['comment'] = '코멘트';

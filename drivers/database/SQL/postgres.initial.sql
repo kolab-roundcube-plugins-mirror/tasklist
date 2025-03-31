@@ -1,7 +1,6 @@
 /**
  * Roundcube Tasklist plugin database
  *
- * @version @package_version@
  * @author Thomas Bruederli
  * @licence GNU AGPL
  * @copyright (C) 2014, Kolab Systems AG
